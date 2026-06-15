@@ -1,5 +1,5 @@
 {
-  "name": "confguard",
+  "name": "@onury/confguard",
   "version": "1.1.0",
   "description": "Builds a nested, typed configuration object from a flat list of config items, with templating and accessor-based (ABAC) filtering. Built on notation.",
   "repository": "onury/confguard",
@@ -7,6 +7,9 @@
   "author": {
     "name": "Onur Yıldırım",
     "email": "onur@cutepilot.com"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "type": "module",
   "main": "./lib/index.js",

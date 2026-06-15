@@ -6,10 +6,10 @@
   <a href="https://github.com/onury/confguard/actions/workflows/ci.yml"><img src="https://github.com/onury/confguard/actions/workflows/ci.yml/badge.svg" alt="build" /></a>
   <a href="#quality"><img src="https://img.shields.io/badge/coverage-100%25-2BB150?logo=vitest&logoColor=%23FDC72B&style=flat" alt="coverage" /></a>
   <a href="https://stryker-mutator.io/docs/"><img src="https://img.shields.io/badge/mutation-91%25-2BB150?style=flat" alt="mutation score" /></a>
-  <a href="https://www.npmjs.com/package/confguard"><img src="https://img.shields.io/npm/v/confguard.svg?style=flat&label=&color=%23C6234B&logo=npm" alt="version" /></a>
+  <a href="https://www.npmjs.com/package/@onury/confguard"><img src="https://img.shields.io/npm/v/@onury/confguard.svg?style=flat&label=&color=%23C6234B&logo=npm" alt="version" /></a>
   <a href="https://gist.github.com/onury/d3f3d765d7db2e8b2d050d14315f2ac7"><img src="https://img.shields.io/badge/ESM-F7DF1E?style=flat" alt="ESM" /></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TS-3260C7?style=flat" alt="TS" /></a>
-  <a href="https://github.com/onury/confguard/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/confguard.svg?style=flat&color=blue" alt="license" /></a>
+  <a href="https://github.com/onury/confguard/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@onury/confguard.svg?style=flat&color=blue" alt="license" /></a>
 </p>
 
 > © 2026, Onur Yıldırım ([@onury](https://github.com/onury)). MIT License.
@@ -23,7 +23,7 @@ configuration items (typically rows from a `config` database table) — with
 **Important**: This module is **ESM** 🔆. Please [**read this**](https://gist.github.com/onury/d3f3d765d7db2e8b2d050d14315f2ac7).
 
 ```ts
-import { ConfGuard, AccessorType } from 'confguard';
+import { ConfGuard, AccessorType } from '@onury/confguard';
 
 const rows = [
   { accessor: 'system', key: 'company.name', type: 'string', listType: 'none', value: 'Acme', editable: true, requiresReboot: false, encrypt: false },
@@ -70,7 +70,7 @@ construction rather than silently producing a partial object (see
 ## Install
 
 ```sh
-npm i confguard
+npm i @onury/confguard
 ```
 
 `notation` is a runtime dependency and is installed automatically.
@@ -115,7 +115,7 @@ client is allowed to see are included in the built object:
   `application` client must be constructed with an `appLevel`.
 
 ```ts
-import { ConfGuard, AccessorType } from 'confguard';
+import { ConfGuard, AccessorType } from '@onury/confguard';
 
 // Application client flags (bitwise).
 const WEB = 1 << 0;    // 0b001
@@ -170,7 +170,7 @@ All failures throw a **`ConfGuardError`** (exported from the package root), so
 consumers can react to a configuration fault specifically:
 
 ```ts
-import { ConfGuard, ConfGuardError } from 'confguard';
+import { ConfGuard, ConfGuardError } from '@onury/confguard';
 
 try {
   new ConfGuard(rows, { accessor: AccessorType.SYSTEM });
@@ -289,7 +289,7 @@ object) with:
 - every `options` reference expanded into that string array.
 
 ```ts
-import { ConfGuard } from 'confguard';
+import { ConfGuard } from '@onury/confguard';
 
 const { '@': optionLists, configList } = ConfGuard.parseFlat([
   { accessor: 'system', key: '@UIColors', type: 'string', listType: 'csl', value: 'Blue,Red,Green', /* … */ },
