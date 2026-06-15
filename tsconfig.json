@@ -1,0 +1,13 @@
+{
+  "extends": "tsconfig-oy",
+  "compilerOptions": {
+    "outDir": "lib",
+    "declarationDir": "lib",
+    "rootDir": ".",
+    "types": ["node", "vitest/globals"]
+  },
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ]
+}
