@@ -1,0 +1,70 @@
+{
+  "name": "confguard",
+  "version": "1.1.0",
+  "description": "Builds a nested, typed configuration object from a flat list of config items, with templating and accessor-based (ABAC) filtering. Built on notation.",
+  "repository": "onury/confguard",
+  "license": "MIT",
+  "author": {
+    "name": "Onur Yıldırım",
+    "email": "onur@cutepilot.com"
+  },
+  "type": "module",
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.js",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "files": [
+    "lib",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "lint": "biome check src test",
+    "format": "biome check --write src test",
+    "build": "tsc --project tsconfig.build.json",
+    "pretest": "npm run lint",
+    "test": "vitest run",
+    "cover": "vitest run --coverage",
+    "mutation": "stryker run",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "configuration",
+    "config",
+    "preference",
+    "setting",
+    "object",
+    "notation",
+    "dot-notation",
+    "glob",
+    "template",
+    "parse",
+    "build",
+    "abac",
+    "access-control"
+  ],
+  "dependencies": {
+    "notation": "^3.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.0",
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/vitest-runner": "^9.6.1",
+    "@types/node": "^25.9.3",
+    "@vitest/coverage-istanbul": "^4.1.8",
+    "biome-config-oy": "^1.0.0",
+    "tsconfig-oy": "^2.0.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  }
+}
