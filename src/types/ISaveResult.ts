@@ -1,7 +1,7 @@
 import type { IConfigItem } from './IConfigItem.js';
 
 /**
- * A single changed configuration row produced by `ConfGuard.serializeFlat()`,
+ * A single changed configuration row produced by `Configuard.serializeFlat()`,
  * ready to be persisted (e.g. an `UPDATE` on the `config` table).
  */
 export interface IConfigUpdate {
@@ -16,7 +16,7 @@ export interface IConfigUpdate {
 }
 
 /**
- * The result of `ConfGuard.serializeFlat()`.
+ * The result of `Configuard.serializeFlat()`.
  */
 export interface ISaveResult {
   /** The changed rows (value or metadata differs from the original). */
@@ -31,7 +31,7 @@ export interface ISaveResult {
 }
 
 /**
- * Options for `ConfGuard.serializeFlat()`.
+ * Options for `Configuard.serializeFlat()`.
  */
 export interface ISerializeOptions {
   /**
@@ -43,7 +43,7 @@ export interface ISerializeOptions {
 
   /**
    * Hook to encrypt the serialized value of items marked `encrypt: true`,
-   * applied when their value is edited. `ConfGuard` is crypto-agnostic: you
+   * applied when their value is edited. `Configuard` is crypto-agnostic: you
    * supply how to encrypt. The function must be **synchronous**.
    *
    * @param value The serialized (plaintext) string value.

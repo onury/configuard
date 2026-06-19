@@ -1,7 +1,7 @@
 import type { IConfigItem } from './IConfigItem.js';
 
 /**
- * A configuration item as produced by `ConfGuard.parseFlat()`.
+ * A configuration item as produced by `Configuard.parseFlat()`.
  *
  * It mirrors `IConfigItem`, except that any `${...}` placeholders in `value`
  * are resolved (the value stays a string — it is not cast to its `type`), and
@@ -18,7 +18,7 @@ export interface IFlatConfigItem extends Omit<IConfigItem, 'options'> {
 }
 
 /**
- * The result of `ConfGuard.parseFlat()`.
+ * The result of `Configuard.parseFlat()`.
  */
 export interface IFlatConfig {
   /**

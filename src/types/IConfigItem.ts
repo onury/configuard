@@ -2,7 +2,7 @@ import type { ListType, ValueType } from '../enums/index.js';
 import type { IAccessorInfo } from '../types/index.js';
 
 /**
- * Interface for confguration items fetched from
+ * Interface for configuration items fetched from
  * a database config table.
  */
 export interface IConfigItem extends IAccessorInfo {

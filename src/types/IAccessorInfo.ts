@@ -1,7 +1,7 @@
 import type { AccessorType } from '../enums/index.js';
 
 /**
- * Interface for confguration accessor information.
+ * Interface for configuration accessor information.
  */
 export interface IAccessorInfo {
   /**
