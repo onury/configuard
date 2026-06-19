@@ -1,16 +1,16 @@
-<h1 align="center">
-  <img alt="ConfGuard" src="https://github.com/onury/confguard/raw/main/confguard-logo.png" width="320" />
-</h1>
+# Configuard
 
 <p align="center">
-  <a href="https://github.com/onury/confguard/actions/workflows/ci.yml"><img src="https://github.com/onury/confguard/actions/workflows/ci.yml/badge.svg" alt="build" /></a>
+  <a href="https://github.com/onury/configuard/actions/workflows/ci.yml"><img src="https://github.com/onury/configuard/actions/workflows/ci.yml/badge.svg" alt="build" /></a>
   <a href="#quality"><img src="https://img.shields.io/badge/coverage-100%25-2BB150?logo=vitest&logoColor=%23FDC72B&style=flat" alt="coverage" /></a>
   <a href="https://stryker-mutator.io/docs/"><img src="https://img.shields.io/badge/mutation-91%25-2BB150?style=flat" alt="mutation score" /></a>
-  <a href="https://www.npmjs.com/package/@onury/confguard"><img src="https://img.shields.io/npm/v/@onury/confguard.svg?style=flat&label=&color=%23C6234B&logo=npm" alt="version" /></a>
+  <a href="https://www.npmjs.com/package/configuard"><img src="https://img.shields.io/npm/v/configuard.svg?style=flat&label=&color=%23C6234B&logo=npm" alt="version" /></a>
   <a href="https://gist.github.com/onury/d3f3d765d7db2e8b2d050d14315f2ac7"><img src="https://img.shields.io/badge/ESM-F7DF1E?style=flat" alt="ESM" /></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TS-3260C7?style=flat" alt="TS" /></a>
-  <a href="https://github.com/onury/confguard/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@onury/confguard.svg?style=flat&color=blue" alt="license" /></a>
+  <a href="https://github.com/onury/configuard/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/configuard.svg?style=flat&color=blue" alt="license" /></a>
 </p>
+
+**Important**: This module is **ESM** 🔆. Please [**read this**](https://gist.github.com/onury/d3f3d765d7db2e8b2d050d14315f2ac7).
 
 > © 2026, Onur Yıldırım ([@onury](https://github.com/onury)). MIT License.
 
@@ -20,17 +20,15 @@ configuration items (typically rows from a `config` database table) — with
 (**ABAC**) filtering. Built on
 [`notation`](https://github.com/onury/notation).
 
-**Important**: This module is **ESM** 🔆. Please [**read this**](https://gist.github.com/onury/d3f3d765d7db2e8b2d050d14315f2ac7).
-
 ```ts
-import { ConfGuard, AccessorType } from '@onury/confguard';
+import { Configuard, AccessorType } from 'configuard';
 
 const rows = [
   { accessor: 'system', key: 'company.name', type: 'string', listType: 'none', value: 'Acme', editable: true, requiresReboot: false, encrypt: false },
   { accessor: 'system', key: 'ai.vision.provider', type: 'string', listType: 'none', value: 'gemini', editable: true, requiresReboot: false, encrypt: false }
 ];
 
-const cfg = new ConfGuard(rows, { accessor: AccessorType.SYSTEM });
+const cfg = new Configuard(rows, { accessor: AccessorType.SYSTEM });
 
 cfg.data;                              // { company: { name: 'Acme' }, ai: { vision: { provider: 'gemini' } } }
 cfg.get<string>('ai.vision.provider'); // 'gemini'  (a scalar, not ['gemini'])
@@ -49,28 +47,28 @@ one-column-per-setting tables or settings scattered across files.
 
 But flat rows are great to *store and administer*, not to *consume*: values are
 strings, related keys are scattered, and the same value is often duplicated.
-ConfGuard sits across the whole lifecycle:
+Configuard sits across the whole lifecycle:
 
 1. **Store** — keep your settings as `IConfigItem` rows in one `config` table.
-2. **Build & use safely** — `new ConfGuard(rows)` produces a **nested,
+2. **Build & use safely** — `new Configuard(rows)` produces a **nested,
    type-cast**, ABAC-filtered object for your runtime. It is **frozen by
    default** (immutable), so backend code can't accidentally mutate live config.
    Read it via `.data` / `.get()` / `.has()`.
-3. **Edit in a UI** — `ConfGuard.parseFlat()` returns the **same flat list**
+3. **Edit in a UI** — `Configuard.parseFlat()` returns the **same flat list**
    with templates resolved and option lists expanded — ideal for an
    **admin/editor UI** where each row is a form field with its own allowed values.
-4. **Save back** — `ConfGuard.serializeFlat()` validates the admin's edits,
+4. **Save back** — `Configuard.serializeFlat()` validates the admin's edits,
    serializes them to DB strings (optionally re-encrypting), and returns the
    **diff** of changed rows to persist to the `config` table.
 
-ConfGuard also **fails loud**: a corrupt config row throws immediately at
+Configuard also **fails loud**: a corrupt config row throws immediately at
 construction rather than silently producing a partial object (see
 [Validation](#validation--fail-loud)).
 
 ## Install
 
 ```sh
-npm i @onury/confguard
+npm i configuard
 ```
 
 `notation` is a runtime dependency and is installed automatically.
@@ -105,7 +103,7 @@ npm i @onury/confguard
 ## Access control (ABAC)
 
 Each item declares an `accessor` — `system`, `application`, or `all` — and the
-client constructing the `ConfGuard` declares its own `accessor`. Only items the
+client constructing the `Configuard` declares its own `accessor`. Only items the
 client is allowed to see are included in the built object:
 
 - A **`system`** client sees `system` and `all` items.
@@ -115,7 +113,7 @@ client is allowed to see are included in the built object:
   `application` client must be constructed with an `appLevel`.
 
 ```ts
-import { ConfGuard, AccessorType } from '@onury/confguard';
+import { Configuard, AccessorType } from 'configuard';
 
 // Application client flags (bitwise).
 const WEB = 1 << 0;    // 0b001
@@ -129,7 +127,7 @@ const rows = [
 ];
 
 // A mobile client (appLevel = MOBILE):
-const cfg = new ConfGuard(rows, { accessor: AccessorType.APPLICATION, appAccess: MOBILE });
+const cfg = new Configuard(rows, { accessor: AccessorType.APPLICATION, appAccess: MOBILE });
 
 cfg.has('ui.theme');      // true   — (WEB|MOBILE) & MOBILE !== 0
 cfg.has('kiosk.timeout'); // false  — KIOSK & MOBILE === 0
@@ -141,7 +139,7 @@ property-level filtering of the built object.
 
 ## Validation — fail loud
 
-Configuration is foundational, so ConfGuard treats a corrupt row as a hard
+Configuration is foundational, so Configuard treats a corrupt row as a hard
 error: the **constructor throws immediately** rather than logging a warning and
 building a partial object. It throws when:
 
@@ -153,10 +151,10 @@ building a partial object. It throws when:
 
 ```ts
 try {
-  const cfg = new ConfGuard(rows, { accessor: AccessorType.SYSTEM });
+  const cfg = new Configuard(rows, { accessor: AccessorType.SYSTEM });
   // use cfg.data / cfg.get(...)
 } catch (err) {
-  // e.g. 'ConfGuard: Value "abc" of key "port" is not a valid number.'
+  // e.g. 'Configuard: Value "abc" of key "port" is not a valid number.'
   // the original parser error (when any) is available as `err.cause`.
 }
 ```
@@ -164,18 +162,18 @@ try {
 > `parseFlat()` likewise throws on missing/circular templates, a missing option
 > list, or a value outside its option list.
 
-### `ConfGuardError`
+### `ConfiguardError`
 
-All failures throw a **`ConfGuardError`** (exported from the package root), so
+All failures throw a **`ConfiguardError`** (exported from the package root), so
 consumers can react to a configuration fault specifically:
 
 ```ts
-import { ConfGuard, ConfGuardError } from '@onury/confguard';
+import { Configuard, ConfiguardError } from 'configuard';
 
 try {
-  new ConfGuard(rows, { accessor: AccessorType.SYSTEM });
+  new Configuard(rows, { accessor: AccessorType.SYSTEM });
 } catch (err) {
-  if (err instanceof ConfGuardError) {
+  if (err instanceof ConfiguardError) {
     err.key;    // the offending config item key, when known
     err.cause;  // the underlying error (e.g. the parser failure), when any
   }
@@ -189,23 +187,23 @@ every nested object and array is recursively `Object.freeze`d — so runtime con
 can't be mutated by accident. Opt out with `{ lock: false }`:
 
 ```ts
-const locked = new ConfGuard(rows, { accessor: AccessorType.SYSTEM });
+const locked = new Configuard(rows, { accessor: AccessorType.SYSTEM });
 locked.isLocked;                 // true
 Object.isFrozen(locked.data);    // true
 // locked.data.x = 1;            // throws in strict mode
 
-const mutable = new ConfGuard(rows, { accessor: AccessorType.SYSTEM }, { lock: false });
+const mutable = new Configuard(rows, { accessor: AccessorType.SYSTEM }, { lock: false });
 mutable.isLocked;                // false
 ```
 
 ## Encryption
 
-Items flagged `encrypt: true` can be stored **encrypted at rest**. ConfGuard is
+Items flagged `encrypt: true` can be stored **encrypted at rest**. Configuard is
 crypto-agnostic — you supply a **synchronous** `decrypt` hook, which it applies
 (before templating/parsing) to those items while building:
 
 ```ts
-const cfg = new ConfGuard(rows, { accessor: AccessorType.SYSTEM }, {
+const cfg = new Configuard(rows, { accessor: AccessorType.SYSTEM }, {
   decrypt: (value, item) => myDecrypt(value) // return the plaintext string
 });
 
@@ -214,7 +212,7 @@ cfg.get('db.password');         // the decrypted plaintext value
 ```
 
 Decryption is **opt-in**: without a `decrypt` hook, `encrypt: true` values are
-used as-is. A failing hook throws a `ConfGuardError`. (Re-encrypting edited
+used as-is. A failing hook throws a `ConfiguardError`. (Re-encrypting edited
 values on save is handled by `serializeFlat()` — see below.)
 
 ## Value types
@@ -260,7 +258,7 @@ enum.
 ## Option lists (`@`-keys)
 
 An admin UI often needs to constrain a field to a set of allowed values
-(dropdowns, multi-selects). ConfGuard models this with **option lists**:
+(dropdowns, multi-selects). Configuard models this with **option lists**:
 
 - A row whose `key` starts with `@` is an **option list definition**, not a
   config value. Only its `value` matters, and it is **always** treated as a
@@ -279,7 +277,7 @@ How a field's `value` relates to its option list:
 
 ## `parseFlat()` — flat output for admin UIs
 
-`ConfGuard.parseFlat(configList)` returns the **same flat list** (not a nested
+`Configuard.parseFlat(configList)` returns the **same flat list** (not a nested
 object) with:
 
 - every `${...}` placeholder in `value` resolved — the value stays a **string**
@@ -289,9 +287,9 @@ object) with:
 - every `options` reference expanded into that string array.
 
 ```ts
-import { ConfGuard } from '@onury/confguard';
+import { Configuard } from 'configuard';
 
-const { '@': optionLists, configList } = ConfGuard.parseFlat([
+const { '@': optionLists, configList } = Configuard.parseFlat([
   { accessor: 'system', key: '@UIColors', type: 'string', listType: 'csl', value: 'Blue,Red,Green', /* … */ },
   { accessor: 'system', key: 'device.ui.colors', type: 'string', listType: 'csl', value: 'Blue,Red', options: '${@UIColors}', /* … */ },
   { accessor: 'system', key: 'port', type: 'integer', listType: 'none', value: '8081', /* … */ },
@@ -322,7 +320,7 @@ configList;
 
 ## Saving edits — `serializeFlat()`
 
-`ConfGuard.serializeFlat(configList, edits, options?)` is the **inverse** of
+`Configuard.serializeFlat(configList, edits, options?)` is the **inverse** of
 `parseFlat()`: it turns the admin's edits back into DB-ready rows. For each edit
 it enforces `editable`, validates the value against its `type` and `options`,
 serializes it to the storage string, optionally re-encrypts `encrypt: true`
@@ -336,7 +334,7 @@ values, and returns the **diff** of changed rows.
   Pass `{ diffOnly: false }` to also get the full merged `rows`.
 
 ```ts
-const { updates, requiresReboot } = ConfGuard.serializeFlat(rows, {
+const { updates, requiresReboot } = Configuard.serializeFlat(rows, {
   'ui.theme': { value: 'dark' },
   port:       { value: '9090' },
   'db.password': { value: 'newSecret' } // encrypt:true row → re-encrypted below
@@ -351,11 +349,11 @@ const { updates, requiresReboot } = ConfGuard.serializeFlat(rows, {
 Serialization is **validate-then-store**: numbers/booleans are canonicalized,
 lists are comma-joined, and other types (`hex`/`date`/`time`/`regexp`/`json`/…)
 are stored as the validated string. Invalid values, option-list violations, a
-non-editable value change, or an `encrypt` hook error throw a `ConfGuardError`.
+non-editable value change, or an `encrypt` hook error throw a `ConfiguardError`.
 
 ## API
 
-### `new ConfGuard(rawConfigList, accessorInfo?, options?)`
+### `new Configuard(rawConfigList, accessorInfo?, options?)`
 
 - `rawConfigList: IConfigItem[]` — the flat config rows.
 - `accessorInfo?: { accessor?: AccessorType; appAccess?: number }` — defaults to
@@ -385,19 +383,19 @@ non-editable value change, or an `encrypt` hook error throw a `ConfGuardError`.
 
 ### Static members
 
-- `ConfGuard.parseFlat(configList)` — resolve templates + option lists into a
+- `Configuard.parseFlat(configList)` — resolve templates + option lists into a
   flat structure (see above). Returns `{ '@': Record<string, string[]>,
   configList: IFlatConfigItem[] }`.
-- `ConfGuard.serializeFlat(configList, edits, options?)` — validate + serialize
+- `Configuard.serializeFlat(configList, edits, options?)` — validate + serialize
   admin edits into a diff of DB-ready rows (the inverse of `parseFlat`; see
   [Saving edits](#saving-edits--serializeflat)). Returns
   `{ updates: IConfigUpdate[], requiresReboot: boolean, rows? }`.
-- `ConfGuard.isConfigItem(o)` — `IConfigItem` type guard.
+- `Configuard.isConfigItem(o)` — `IConfigItem` type guard.
 
 ## The config item
 
 Each row implements `IConfigItem`, mirroring the reference `config` table (see
-[`example/config.sql`](./example/config.sql)):
+[`docs/config.sql`](./docs/config.sql)):
 
 | Field | Type | Meaning |
 |-------|------|---------|
@@ -414,7 +412,7 @@ Each row implements `IConfigItem`, mirroring the reference `config` table (see
 | `encrypt` | `boolean` | Whether the value should be encrypted when fetched. |
 | `description` | `string \| null` | Human-readable description. |
 
-See [`example/config.sql`](./example/config.sql) for the reference `config` table.
+See [`docs/config.sql`](./docs/config.sql) for the reference `config` table.
 
 ## Quality
 
