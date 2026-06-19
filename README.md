@@ -37,9 +37,9 @@ cfg.get<string>('ai.vision.provider'); // 'gemini'  (a scalar, not ['gemini'])
 cfg.has('company.name');               // true
 ```
 
-## Why
+## Why?
 
-**Why a vertical key→value config table?** Configuration is a long,
+**Why a vertical key → value config table?** Configuration is a long,
 ever-growing list of individual settings that changes across environments and
 over the life of a product. A tall key/value table lets you add, edit, or remove
 one setting at a time — each row carrying its own metadata (`type`, access
@@ -75,7 +75,7 @@ npm i configuard
 
 `notation` is a runtime dependency and is installed automatically.
 
-## How it works
+## How it Works
 
 - **Flat → nested + typed.** Each item's `key` is a dot/bracket notation
   (`ai.vision.provider`); its string `value` is parsed according to `type`
@@ -102,7 +102,7 @@ npm i configuard
   malformed item) **throws** at construction — never a silent partial build (see
   [Validation](#validation--fail-loud)).
 
-## Access control (ABAC)
+## Access Control (ABAC)
 
 Each item declares an `accessor` — `system`, `application`, or `all` — and the
 client constructing the `Configuard` declares its own `accessor`. Only items the
@@ -139,7 +139,7 @@ cfg.has('app.name');      // true   — `all` item, no appAccess
 Combine with [`accesscontrol`](https://github.com/onury/accesscontrol) for
 property-level filtering of the built object.
 
-## Validation — fail loud
+## Validation — Fail Loud
 
 Configuration is foundational, so Configuard treats a corrupt row as a hard
 error: the **constructor throws immediately** rather than logging a warning and
@@ -182,7 +182,7 @@ try {
 }
 ```
 
-## Locking (immutability)
+## Locking (Immutability)
 
 The object returned by `build()` (the constructor) is **deep-frozen by default** —
 every nested object and array is recursively `Object.freeze`d — so runtime config
@@ -217,7 +217,7 @@ Decryption is **opt-in**: without a `decrypt` hook, `encrypt: true` values are
 used as-is. A failing hook throws a `ConfiguardError`. (Re-encrypting edited
 values on save is handled by `serializeFlat()` — see below.)
 
-## Value types
+## Value Types
 
 `type` declares how a row's raw string `value` is parsed. See the `ValueType`
 enum.
@@ -242,7 +242,7 @@ enum.
 > objects), since they carry no full timestamp — use `datetime` when you need a
 > `Date`.
 
-## List types
+## List Types
 
 `listType` controls whether a value is a single value or a list.
 
@@ -257,7 +257,7 @@ enum.
 // listType: 'csl',   type: 'string',  value: 'a , b ,c'  →  'a,b,c'
 ```
 
-## Option lists (`@`-keys)
+## Option Lists (`@`-keys)
 
 An admin UI often needs to constrain a field to a set of allowed values
 (dropdowns, multi-selects). Configuard models this with **option lists**:
@@ -320,7 +320,7 @@ configList;
 | `options` | Ignored | Expanded to string arrays |
 | ABAC filtering | Yes | No |
 
-## Saving edits — `serializeFlat()`
+## Saving Edits — `serializeFlat()`
 
 `Configuard.serializeFlat(configList, edits, options?)` is the **inverse** of
 `parseFlat()`: it turns the admin's edits back into DB-ready rows. For each edit
@@ -367,7 +367,7 @@ non-editable value change, or an `encrypt` hook error throw a `ConfiguardError`.
   `encrypt: true` items (see [Encryption](#encryption)).
 - **Throws** on a corrupt config (see [Validation](#validation--fail-loud)).
 
-### Instance members
+### Instance Members
 
 - `.data` — the built, nested configuration object (frozen unless `lock: false`).
 - `.get<T>(path, defaultValue?)` — typed read of a property by notation.
@@ -383,7 +383,7 @@ non-editable value change, or an `encrypt` hook error throw a `ConfiguardError`.
 > visible to this instance's accessor (mirroring `.has()`), returning
 > `undefined`/`false` otherwise.
 
-### Static members
+### Static Members
 
 - `Configuard.parseFlat(configList)` — resolve templates + option lists into a
   flat structure (see above). Returns `{ '@': Record<string, string[]>,
@@ -394,7 +394,7 @@ non-editable value change, or an `encrypt` hook error throw a `ConfiguardError`.
   `{ updates: IConfigUpdate[], requiresReboot: boolean, rows? }`.
 - `Configuard.isConfigItem(o)` — `IConfigItem` type guard.
 
-## The config item
+## The Config Item
 
 Each row implements `IConfigItem`, mirroring the reference `config` table (see
 [`docs/config.sql`](./docs/config.sql)):
@@ -434,3 +434,9 @@ here are [equivalent mutants](https://stryker-mutator.io/docs/mutation-testing-e
 date utilities (`parseDate`/`createUTCDate`) are fully unit-tested but excluded
 from the mutation scope, as their date-format regexes are dominated by
 equivalent mutants.
+
+## License
+
+[**MIT**][license].
+
+[license]:https://github.com/onury/accesscontrol/blob/master/LICENSE
