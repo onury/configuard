@@ -1,4 +1,6 @@
-# Configuard
+<h1 align="center">
+  <img alt="Configuard" src="https://github.com/onury/configuard/raw/main/configuard-logo.png" width="320" />
+</h1>
 
 <p align="center">
   <a href="https://github.com/onury/configuard/actions/workflows/ci.yml"><img src="https://github.com/onury/configuard/actions/workflows/ci.yml/badge.svg" alt="build" /></a>
