@@ -1,0 +1,96 @@
+---
+title: Getting Started
+description: Install Configuard, build a typed config object from flat rows, and read it back.
+---
+
+import { Code } from '@astrojs/starlight/components';
+import { Aside } from '@astrojs/starlight/components';
+import rows from '../../cases/device/rows.json?raw';
+
+Configuard turns a **flat list** of configuration rows — typically the contents
+of a `config` database table — into a **nested, typed, immutable** object your
+runtime can read safely.
+
+## Install
+
+```sh
+npm i configuard
+```
+
+[`notation`](https://github.com/onury/notation) is a runtime dependency and is
+installed with it.
+
+<Aside type="note">
+  Configuard is **ESM-only**. If `import` from an ESM package is new to you,
+  [read this first](https://gist.github.com/onury/d3f3d765d7db2e8b2d050d14315f2ac7).
+</Aside>
+
+## The shape of a row
+
+Each row is an [`IConfigItem`](/configuard/concepts/config-item/) — a `key` in
+dot/bracket notation, a raw string `value`, and the metadata that says how to
+parse it and who may see it. Here is a small device config used throughout these
+docs:
+
+<Code code={rows} lang="json" title="config rows" />
+
+## Build and read
+
+Pass the rows to the constructor with the accessor doing the reading. The result
+is built once, deep-frozen, and read by notation path:
+
+```ts
+import { Configuard, AccessorType } from 'configuard';
+
+const cfg = new Configuard(rows, { accessor: AccessorType.SYSTEM });
+
+cfg.data;
+// {
+//   company: { name: 'Acme' },
+//   device: {
+//     port: 8080,
+//     config: { updateOnBoot: true, lifeSpan: 1440 },
+//     ui: { accent: 'Amber' },
+//     protocol: { transports: ['http', 'mqtt'] },
+//     diagnostics: { uploadUrl: 'https://device.local/upload' }
+//   },
+//   environment: { host: 'device.local' },
+//   db: { password: 'enc:5f3a9c2e7b104d8f' }  // encrypted — no decrypt hook here
+// }
+
+cfg.get<number>('device.port');        // 8080         — a number, not "8080"
+cfg.get('device.protocol.transports'); // ['http', 'mqtt']
+cfg.has('device.ui.accent');           // true
+```
+
+Note what the build did for you: strings were cast to their declared
+[type](/configuard/concepts/value-types/) (`"8080"` → `8080`), the
+`array` row was split into a list, the `${environment.host}`
+[template](/configuard/concepts/templating/) was resolved, and the whole object
+was [frozen](/configuard/concepts/building/#immutability) so nothing downstream
+can mutate live config.
+
+## The lifecycle
+
+Configuard sits across the whole life of a setting, not just the read:
+
+1. **Store** — keep settings as rows in one `config` table.
+2. **Build & use** — `new Configuard(rows)` produces the nested, type-cast,
+   [ABAC-filtered](/configuard/concepts/access-control/) object for your
+   runtime. Read it via [`.data` / `.get()` / `.has()`](/configuard/concepts/building/).
+3. **Edit in a UI** — [`Configuard.parseFlat()`](/configuard/guides/admin-ui/)
+   returns the same flat list with templates resolved and option lists expanded,
+   ready to render as form fields.
+4. **Save back** — [`Configuard.serializeFlat()`](/configuard/guides/admin-ui/)
+   validates the edits, serializes them to DB strings, and returns the **diff**
+   to persist.
+
+Configuard also [**fails loud**](/configuard/concepts/validation/): a corrupt
+row throws at construction rather than silently producing a partial object.
+
+## Next
+
+- [The Config Item](/configuard/concepts/config-item/) — the row shape and the `config` table.
+- [Value & List Types](/configuard/concepts/value-types/) — how a raw string becomes a typed value.
+- [Access Control (ABAC)](/configuard/concepts/access-control/) — who sees which rows.
+- [Admin UI Workflow](/configuard/guides/admin-ui/) — the `parseFlat` → edit → `serializeFlat` round trip.

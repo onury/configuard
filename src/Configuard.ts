@@ -76,6 +76,22 @@ function serializeScalar(value: string, type: ValueType, key: string): string {
  * Builds a nested, typed configuration object from a flat list of configuration
  * items (typically rows from a `config` database table). Supports `${...}`
  * value templating and accessor-based (ABAC) filtering of items.
+ *
+ * @example
+ * ```ts
+ * import { Configuard, AccessorType } from 'configuard';
+ *
+ * const rows = [
+ *   { accessor: 'system', key: 'company.name', type: 'string', listType: 'none', value: 'Acme', editable: true, requiresReboot: false, encrypt: false },
+ *   { accessor: 'system', key: 'device.port',  type: 'integer', listType: 'none', value: '8080', editable: false, requiresReboot: true, encrypt: false }
+ * ];
+ *
+ * const cfg = new Configuard(rows, { accessor: AccessorType.SYSTEM });
+ *
+ * cfg.data;                       // { company: { name: 'Acme' }, device: { port: 8080 } }
+ * cfg.get<number>('device.port'); // 8080  (a number, not "8080")
+ * cfg.has('company.name');        // true
+ * ```
  */
 export class Configuard {
   private _: {
@@ -544,6 +560,20 @@ export class Configuard {
    * @throws {ConfiguardError} If a `${...}` reference is missing or circular, if
    * an `options` reference points to a missing option list, or if a value is
    * not a member of its option list.
+   *
+   * @example
+   * ```ts
+   * const { '@': optionLists, configList } = Configuard.parseFlat([
+   *   { accessor: 'system', key: '@UIColors',        type: 'string', listType: 'csl',  value: 'Blue,Red,Green' },
+   *   { accessor: 'system', key: 'device.ui.accent', type: 'string', listType: 'none', value: 'Red', options: '${@UIColors}' },
+   *   { accessor: 'system', key: 'port',             type: 'integer', listType: 'none', value: '8081' },
+   *   { accessor: 'system', key: 'env.internalPort', type: 'integer', listType: 'none', value: '${port}' }
+   * ]);
+   *
+   * optionLists; // { UIColors: ['Blue', 'Red', 'Green'] }
+   * // configList: device.ui.accent.options → ['Blue','Red','Green'];
+   * //             env.internalPort.value   → '8081' (template resolved, kept as string)
+   * ```
    */
   static parseFlat(configList: IConfigItem[]): IFlatConfig {
     const list = isArray(configList) ? configList : [];
@@ -658,6 +688,17 @@ export class Configuard {
    * @throws {ConfiguardError} If a key is not found, a non-editable item's value
    * is changed, a value is invalid for its `type`, a value is not in its option
    * list, a referenced option list is missing, or an `encrypt` hook throws.
+   *
+   * @example
+   * ```ts
+   * const { updates, requiresReboot } = Configuard.serializeFlat(rows, {
+   *   'ui.theme': { value: 'dark' },
+   *   port:       { value: '9090' }
+   * });
+   *
+   * // updates: [{ key: 'ui.theme', id, value: 'dark', requiresReboot: false }, …]
+   * // requiresReboot: true   (if any changed row requires it)
+   * ```
    */
   static serializeFlat(
     configList: IConfigItem[],

@@ -22,30 +22,44 @@ hero:
   <div class="feature">
     <div class="feature-head">
       <span class="feature-icon ti fi-blue">◆</span>
-      <h3>Fast</h3>
+      <h3>Flat → nested &amp; typed</h3>
     </div>
-    <p>Describe a key capability of Configuard here.</p>
+    <p>Turn a tall <code>key / value</code> config table into a nested object, each value cast to its declared type.</p>
   </div>
   <div class="feature">
     <div class="feature-head">
       <span class="feature-icon ti fi-green">◆</span>
-      <h3>Typed</h3>
+      <h3>Templating</h3>
     </div>
-    <p>Another highlight — replace this placeholder copy.</p>
+    <p><code>${'{...}'}</code> references resolve recursively; circular and missing references are caught, not ignored.</p>
   </div>
   <div class="feature">
     <div class="feature-head">
       <span class="feature-icon ti fi-purple">◆</span>
-      <h3>Tested</h3>
+      <h3>ABAC filtering</h3>
     </div>
-    <p>A third selling point goes here.</p>
+    <p>Each row declares an accessor; clients see only what their accessor and bitwise app level allow.</p>
   </div>
   <div class="feature">
     <div class="feature-head">
       <span class="feature-icon ti fi-orange">◆</span>
-      <h3>Zero-config</h3>
+      <h3>Immutable &amp; fail-loud</h3>
     </div>
-    <p>And a fourth. Edit these in <code>src/content/docs/index.mdx</code>.</p>
+    <p>The built object is deep-frozen by default, and a corrupt row throws at construction — never a silent partial build.</p>
+  </div>
+  <div class="feature">
+    <div class="feature-head">
+      <span class="feature-icon ti fi-blue">◆</span>
+      <h3>Admin round-trip</h3>
+    </div>
+    <p><code>parseFlat()</code> renders rows as editable fields; <code>serializeFlat()</code> validates edits back into a DB-ready diff.</p>
+  </div>
+  <div class="feature">
+    <div class="feature-head">
+      <span class="feature-icon ti fi-green">◆</span>
+      <h3>Encryption-aware</h3>
+    </div>
+    <p>Bring your own crypto: a <code>decrypt</code>/<code>encrypt</code> hook handles <code>encrypt: true</code> values at rest.</p>
   </div>
 </div>
 

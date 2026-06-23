@@ -57,21 +57,31 @@ export default defineConfig({
       ],
       sidebar: [
         {
-          "label": "Start Here",
-          "items": [
-            {
-              "label": "Getting Started",
-              "slug": "getting-started"
-            }
+          label: 'Start Here',
+          items: [{ label: 'Getting Started', slug: 'getting-started' }]
+        },
+        {
+          label: 'Concepts',
+          items: [
+            { label: 'The Config Item', slug: 'concepts/config-item' },
+            { label: 'Value & List Types', slug: 'concepts/value-types' },
+            { label: 'Templating', slug: 'concepts/templating' },
+            { label: 'Option Lists', slug: 'concepts/option-lists' },
+            { label: 'Access Control (ABAC)', slug: 'concepts/access-control' },
+            { label: 'Building & Reading', slug: 'concepts/building' },
+            { label: 'Validation — Fail Loud', slug: 'concepts/validation' },
+            { label: 'Encryption', slug: 'concepts/encryption' }
           ]
         },
         {
-          "label": "Help",
-          "items": [
-            {
-              "label": "Changelog",
-              "slug": "changelog"
-            }
+          label: 'Guides',
+          items: [{ label: 'Admin UI Workflow', slug: 'guides/admin-ui' }]
+        },
+        {
+          label: 'Help',
+          items: [
+            { label: 'FAQ', slug: 'faq' },
+            { label: 'Changelog', slug: 'changelog' }
           ]
         },
         typeDocSidebarGroup

@@ -1,0 +1,102 @@
+---
+title: Admin UI Workflow
+description: Render config rows as editable fields with parseFlat(), then validate and persist the edits with serializeFlat().
+---
+
+import { Code } from '@astrojs/starlight/components';
+import { Aside } from '@astrojs/starlight/components';
+import rows from '../../../cases/device/rows.json?raw';
+
+[`build()`](/configuard/concepts/building/) gives your *runtime* a nested, typed
+object. An *admin UI* needs the opposite: the flat list, one row per form field,
+with templates resolved and dropdowns populated. Two static methods cover that
+round trip.
+
+The rows used below:
+
+<Code code={rows} lang="json" title="config rows" />
+
+## 1. Render — `parseFlat()`
+
+`Configuard.parseFlat(configList)` returns the **same flat list** (not a nested
+object) with:
+
+- every `${...}` placeholder in `value` resolved — the value stays a **string**
+  (it is *not* cast to its `type`);
+- every `@`-key [option list](/configuard/concepts/option-lists/) extracted into
+  a separate `@` object, each a trimmed, uncast string array; and
+- every `options` reference expanded into that array.
+
+```ts
+import { Configuard } from 'configuard';
+
+const { '@': optionLists, configList } = Configuard.parseFlat(rows);
+
+optionLists;
+// { UIColors: ['Blue', 'Red', 'Green', 'Amber'] }
+
+configList.find(i => i.key === 'device.ui.accent');
+// { key: 'device.ui.accent', value: 'Amber',
+//   options: ['Blue', 'Red', 'Green', 'Amber'], listType: 'none', … }
+
+configList.find(i => i.key === 'device.diagnostics.uploadUrl');
+// { …, value: 'https://device.local/upload', … }   ${environment.host} resolved
+```
+
+Each row now carries everything a field needs: the current `value`, the allowed
+`options` (if any), and its metadata (`editable`, `description`, `type`).
+
+<Aside type="caution">
+  `parseFlat()` does **not** apply ABAC filtering or your `decrypt` hook — it is
+  the full editor view. Gate access to the editor itself, and decrypt separately
+  if a field must show plaintext.
+</Aside>
+
+## 2. Save — `serializeFlat()`
+
+`Configuard.serializeFlat(configList, edits, options?)` is the **inverse**: it
+turns the admin's edits back into DB-ready rows. For each edit it enforces
+`editable`, validates the value against its `type` and `options`, serializes it
+to the storage string, optionally re-[encrypts](/configuard/concepts/encryption/)
+`encrypt: true` values, and returns the **diff** of changed rows.
+
+```ts
+const { updates, requiresReboot } = Configuard.serializeFlat(rows, {
+  'device.ui.accent':  { value: 'Blue' },
+  'device.config.lifeSpan': { value: '720' },
+  'db.password':       { value: 'newSecret' } // encrypt:true → re-encrypted below
+}, {
+  encrypt: (value, item) => myEncrypt(value)   // for encrypt:true items
+});
+
+// updates: [
+//   { key: 'device.ui.accent',       id, value: 'Blue', requiresReboot: false },
+//   { key: 'device.config.lifeSpan', id, value: '720',  requiresReboot: false },
+//   { key: 'db.password',            id, value: '<encrypted>', requiresReboot: false }
+// ]
+// requiresReboot: false   (true if any changed row requires it)
+```
+
+- `edits` maps a config `key` to its changed fields (`Partial<IConfigItem>` — a
+  `value` and/or metadata such as `editable`). **Only keys you pass are
+  processed**; every other row is left untouched, so `${...}` templates in
+  unedited rows are preserved.
+- The result is `{ updates, requiresReboot }` — `updates` is the changed rows
+  (`{ key, id, value, requiresReboot }`); `requiresReboot` is the aggregate.
+  Pass `{ diffOnly: false }` to also receive the full merged `rows`.
+
+Serialization is **validate-then-store**: numbers and booleans are canonicalized,
+lists are comma-joined, and other types (hex/date/time/regexp/json/datetime) are
+stored as the validated string. An invalid value, an option-list violation, a
+change to a non-`editable` item, or an `encrypt`-hook error throws a
+[`ConfiguardError`](/configuard/concepts/validation/).
+
+## `build()` vs `parseFlat()`
+
+| | `build()` (constructor) | `parseFlat()` |
+|---|---|---|
+| Output shape | Nested object | Flat list (+ `@` option lists) |
+| `value` | Parsed/cast to `type` | Resolved template, kept as string |
+| `@`-keys | Excluded | Kept (in the list **and** `@`) |
+| `options` | Ignored | Expanded to string arrays |
+| ABAC filtering | Yes | No |

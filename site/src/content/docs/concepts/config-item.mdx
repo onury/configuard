@@ -1,0 +1,70 @@
+---
+title: The Config Item
+description: The IConfigItem row — its fields, the reference config table, and the special @ and $ keys.
+---
+
+import { Code } from '@astrojs/starlight/components';
+import { Aside } from '@astrojs/starlight/components';
+import schema from '../../../cases/device/schema.sql?raw';
+
+Everything Configuard does starts from a list of **config items**. One item is
+one setting — a row in a tall `key / value` table, carrying its own metadata.
+
+## Why a vertical table
+
+Configuration is a long, ever-growing list of individual settings that changes
+across environments and over the life of a product. A tall key/value table lets
+you add, edit, or remove one setting at a time — each row carrying its own
+`type`, access level, options, and flags — and administer it from a UI **without
+schema migrations**. That beats wide, one-column-per-setting tables or settings
+scattered across files.
+
+The cost is that flat rows are good to *store*, not to *consume*: values are
+strings, related keys are scattered, and the same value is often duplicated.
+Configuard closes that gap.
+
+## `IConfigItem`
+
+Each row implements [`IConfigItem`](/configuard/api/interfaces/iconfigitem/):
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `accessor` | `AccessorType` | `system` / `application` / `all`. See [Access Control](/configuard/concepts/access-control/). |
+| `appAccess` | `number \| null` | Bitwise flags for application clients (ABAC). |
+| `key` | `string` | Dot/bracket notation; a leading `@` marks an [option list](/configuard/concepts/option-lists/). |
+| `type` | `ValueType` | How `value` is parsed. See [Value Types](/configuard/concepts/value-types/). |
+| `listType` | `ListType` | `none` / `array` / `csl`. See [List Types](/configuard/concepts/value-types/#list-types). |
+| `value` | `string \| null` | The raw value to parse; may contain `${...}` [templates](/configuard/concepts/templating/). |
+| `options` | `string \| null` | Allowed values, or a `"${@name}"` option-list reference. |
+| `defaultValue` | `string \| null` | Factory value, for reverting. |
+| `requiresReboot` | `boolean` | Whether changing it requires a reboot. |
+| `editable` | `boolean` | Whether the accessor may edit it. |
+| `encrypt` | `boolean` | Whether the value is [encrypted](/configuard/concepts/encryption/) at rest. |
+| `description` | `string \| null` | Human-readable description. |
+
+`Configuard.isConfigItem(o)` is the matching type guard.
+
+## The reference table
+
+The rows mirror a `config` table. A reference schema:
+
+<Code code={schema} lang="sql" title="schema.sql" />
+
+The `value` column stays a string in storage — Configuard parses it on the way
+out and serializes it on the way back in.
+
+## Special keys
+
+Two `key` shapes are treated as metadata, not as plain config values:
+
+- **`@`-prefixed keys** define a reusable [option list](/configuard/concepts/option-lists/)
+  (e.g. `@UIColors`). They are excluded from the built object.
+- **Section markers** — a key whose last note starts with `$` (e.g.
+  `cp.config.$title`) is section metadata for an admin UI, and is skipped during
+  the build.
+
+<Aside type="tip">
+  Both are ignored by `build()`. Option-list keys come back when you call
+  [`parseFlat()`](/configuard/guides/admin-ui/); section markers are always
+  build-time noise and never appear in `.data`.
+</Aside>

@@ -51,8 +51,9 @@ export interface IConfigItem extends IAccessorInfo {
    */
   requiresReboot: boolean;
   /**
-   * Whether this configuration should be encrypted when fetched.
-   * @default true
+   * Whether this configuration should be encrypted at rest. Decryption is
+   * opt-in via the `decrypt` hook (see `IConfiguardOptions`).
+   * @default false
    */
   encrypt: boolean;
   /**
