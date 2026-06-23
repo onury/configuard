@@ -4,8 +4,8 @@
  * =========================================================================== */
 
 :root {
-  /* Configuard accent — PLACEHOLDER, change to your brand color. */
-  --oy-accent: #3b82f6;
+  /* Configuard brand amber (the logo shield). */
+  --oy-accent: #eaa426;
   /* --oy-accent-high: var(--oy-accent); */
 }
 
