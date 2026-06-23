@@ -29,6 +29,8 @@
   width: 100%;
   height: auto;
   display: block;
+  /* Breathing room between the logo and the tagline/actions below it. */
+  margin-bottom: 1.5rem;
 }
 
 .hero .actions a.primary {
