@@ -1,0 +1,10 @@
+/* ===========================================================================
+ * overrides.css — PER-PROJECT theme tokens (loaded after the shared theme).
+ * Override tokens here to give THIS docs site its own flavor.
+ * =========================================================================== */
+
+:root {
+  /* Configuard accent — PLACEHOLDER, change to your brand color. */
+  --oy-accent: #3b82f6;
+  /* --oy-accent-high: var(--oy-accent); */
+}
