@@ -13,3 +13,9 @@
  * now come from @onury/docs-kit. To left-align instead, set in :root above:
  *   --oy-hero-align: start;
  */
+
+/* Top-left header logo: 15% smaller than Starlight's default nav-height fit.
+ * (width is auto, so it scales proportionally.) */
+.header .site-title img {
+  height: calc((var(--sl-nav-height) - 2 * var(--sl-nav-pad-y)) * 0.85);
+}
