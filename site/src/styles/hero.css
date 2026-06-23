@@ -33,6 +33,16 @@
   margin-bottom: 1.5rem;
 }
 
+/* Theme-adaptive hero wordmark: two pill-less variants (white text for dark,
+ * dark text for light). The `display: block` above outweighs Starlight's
+ * `.dark:sl-hidden` utility, so swap them with our own higher-specificity rule. */
+:root[data-theme='dark'] .hero .hero-html img.hero-logo--light {
+  display: none;
+}
+:root[data-theme='light'] .hero .hero-html img.hero-logo--dark {
+  display: none;
+}
+
 .hero .actions a.primary {
   transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
