@@ -417,6 +417,10 @@ Each row implements `IConfigItem`, mirroring the reference `config` table (see
 
 See [`docs/config.sql`](./docs/config.sql) for the reference `config` table.
 
+## Documentation
+
+Read the full [**documentation**][docs] — guides, concepts and the API reference.
+
 ## Quality
 
 - **100% test coverage** (statements, branches, functions, lines) — enforced in
@@ -440,4 +444,5 @@ equivalent mutants.
 
 [**MIT**][license].
 
-[license]:https://github.com/onury/accesscontrol/blob/master/LICENSE
+[license]:https://github.com/onury/configuard/blob/main/LICENSE
+[docs]:https://onury.io/configuard
