@@ -20,6 +20,7 @@ hero:
 ```ts
 const cfg = new Configuard(rows, { accessor: AccessorType.SYSTEM });
 cfg.get<number>('device.port'); // 8080 — typed & nested, built from flat config rows
+cfg.has('device.ui.accent');    // true
 ```
 
 {/* Feature cards use the shared `.feature-grid` classes from @onury/docs-kit. */}
