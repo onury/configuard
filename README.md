@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img alt="Configuard" src="https://github.com/onury/configuard/raw/main/logo.png" width="320" />
+  <img alt="Configuard" src="https://github.com/onury/configuard/raw/main/logo.svg" width="320" />
 </h1>
 
 <p align="center">
