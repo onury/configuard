@@ -1,5 +1,5 @@
 {
-  "name": "configuard-website",
+  "name": "configuard-site",
   "private": true,
   "type": "module",
   "description": "Documentation site for Configuard (Astro + Starlight via @onury/docs-kit). Not published.",
