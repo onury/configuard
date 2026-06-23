@@ -27,61 +27,61 @@ cfg.has('device.ui.accent');    // true
 <div class="feature-grid">
   <div class="feature">
     <div class="feature-head">
-      <span class="feature-icon ti fi-blue">◆</span>
-      <h3>Flat → nested &amp; typed</h3>
+      <i class="ti ti-list-tree feature-icon fi-orange"></i>
+      <h3>Flat → Nested &amp; Typed</h3>
     </div>
     <p>Turn a tall <code>key / value</code> config table into a nested object, each value cast to its declared type.</p>
   </div>
   <div class="feature">
     <div class="feature-head">
-      <span class="feature-icon ti fi-green">◆</span>
+      <i class="ti ti-variable feature-icon fi-green"></i>
       <h3>Templating</h3>
     </div>
     <p><code>${'{...}'}</code> references resolve recursively; circular and missing references are caught, not ignored.</p>
   </div>
   <div class="feature">
     <div class="feature-head">
-      <span class="feature-icon ti fi-purple">◆</span>
-      <h3>ABAC filtering</h3>
+      <i class="ti ti-shield-lock feature-icon fi-purple"></i>
+      <h3>ABAC Filtering</h3>
     </div>
     <p>Each row declares an accessor; clients see only what their accessor and bitwise app level allow.</p>
   </div>
   <div class="feature">
     <div class="feature-head">
-      <span class="feature-icon ti fi-orange">◆</span>
-      <h3>Immutable &amp; fail-loud</h3>
+      <i class="ti ti-snowflake feature-icon fi-blue"></i>
+      <h3>Immutable &amp; Fail-Loud</h3>
     </div>
     <p>The built object is deep-frozen by default, and a corrupt row throws at construction — never a silent partial build.</p>
   </div>
   <div class="feature">
     <div class="feature-head">
-      <span class="feature-icon ti fi-blue">◆</span>
-      <h3>Admin round-trip</h3>
+      <i class="ti ti-arrows-exchange feature-icon fi-red"></i>
+      <h3>Admin Round-Trip</h3>
     </div>
     <p><code>parseFlat()</code> renders rows as editable fields; <code>serializeFlat()</code> validates edits back into a DB-ready diff.</p>
   </div>
   <div class="feature">
     <div class="feature-head">
-      <span class="feature-icon ti fi-green">◆</span>
-      <h3>Encryption-aware</h3>
+      <i class="ti ti-key feature-icon fi-yellow"></i>
+      <h3>Encryption-Aware</h3>
     </div>
     <p>Bring your own crypto: a <code>decrypt</code>/<code>encrypt</code> hook handles <code>encrypt: true</code> values at rest.</p>
   </div>
 </div>
 
-## See related projects
+## See Related Projects
 
 <div class="feature-grid">
   <div class="feature">
     <div class="feature-head">
-      <span class="feature-icon ti fi-green">◆</span>
+      <span class="feature-icon ti">◆</span>
       <h3><a href="https://onury.io/notation/">Notation</a></h3>
     </div>
     <p>Read, modify, and filter JavaScript objects and arrays with notation strings or glob patterns. Configuard is built on it.</p>
   </div>
   <div class="feature">
     <div class="feature-head">
-      <span class="feature-icon ti fi-purple">◆</span>
+      <span class="feature-icon ti">◆</span>
       <h3><a href="https://onury.io/accesscontrol/">AccessControl</a></h3>
     </div>
     <p>Role- and attribute-based access control (RBAC/ABAC) for Node.js — pairs with Configuard's row-level filtering.</p>
