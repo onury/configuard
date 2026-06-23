@@ -23,7 +23,7 @@ until it reaches a concrete value.
 // environment.intPort = '${port}'   →  8080
 ```
 
-## Missing references throw
+## Missing References Throw
 
 If a `${...}` reference points at a key that doesn't exist, construction
 [throws](/configuard/concepts/validation/):
@@ -32,7 +32,7 @@ If a `${...}` reference points at a key that doesn't exist, construction
 ConfiguardError: Referenced value for template is missing: "${missing.key}"
 ```
 
-## Circular references are detected
+## Circular References Are Detected
 
 A cycle (`a` → `${b}`, `b` → `${a}`) would otherwise recurse forever. Configuard
 tracks the keys being resolved and throws instead:
@@ -41,7 +41,7 @@ tracks the keys being resolved and throws instead:
 ConfiguardError: Circular template reference detected at: "a"
 ```
 
-## A note on access-filtered references
+## A Note on Access-Filtered References
 
 A template is only as resolvable as the rows **visible to the current
 accessor**. If a value references a key the client can't see (a higher-privilege

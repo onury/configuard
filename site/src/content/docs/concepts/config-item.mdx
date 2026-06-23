@@ -10,7 +10,7 @@ import schema from '../../../cases/device/schema.sql?raw';
 Everything Configuard does starts from a list of **config items**. One item is
 one setting — a row in a tall `key / value` table, carrying its own metadata.
 
-## Why a vertical table
+## Why a Vertical Table
 
 Configuration is a long, ever-growing list of individual settings that changes
 across environments and over the life of a product. A tall key/value table lets
@@ -44,7 +44,7 @@ Each row implements [`IConfigItem`](/configuard/api/interfaces/iconfigitem/):
 
 `Configuard.isConfigItem(o)` is the matching type guard.
 
-## The reference table
+## The Reference Table
 
 The rows mirror a `config` table. A reference schema:
 
@@ -53,7 +53,7 @@ The rows mirror a `config` table. A reference schema:
 The `value` column stays a string in storage — Configuard parses it on the way
 out and serializes it on the way back in.
 
-## Special keys
+## Special Keys
 
 Two `key` shapes are treated as metadata, not as plain config values:
 

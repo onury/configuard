@@ -7,7 +7,7 @@ Items flagged `encrypt: true` can be stored **encrypted at rest**. Configuard is
 crypto-agnostic — it never picks an algorithm for you. You supply a
 **synchronous** hook, and it applies that hook to the flagged items.
 
-## Decrypting on build
+## Decrypting on Build
 
 Pass a `decrypt` hook; Configuard applies it to `encrypt: true` items **before**
 templating and parsing, while building:
@@ -26,7 +26,7 @@ used as-is (with a debug warning if `debugLogs` is on). A hook that throws raise
 a [`ConfiguardError`](/configuard/concepts/validation/) — the failure is never
 swallowed.
 
-## Encrypting on save
+## Encrypting on Save
 
 The inverse runs in [`serializeFlat()`](/configuard/guides/admin-ui/): pass an
 `encrypt` hook and edited `encrypt: true` values are re-encrypted before they

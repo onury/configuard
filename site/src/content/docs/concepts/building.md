@@ -27,7 +27,7 @@ cfg.has('device.ui.accent');       // true
 `get()` and `has()` take a dot/bracket-notation path. `get<T>()` is a typed
 read; the generic is a convenience cast, not a runtime check.
 
-## Inspecting metadata
+## Inspecting Metadata
 
 Beyond the *value*, you can read the source row's *metadata* for any visible key:
 

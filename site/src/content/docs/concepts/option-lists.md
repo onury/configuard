@@ -17,7 +17,7 @@ An admin UI often needs to constrain a field to a set of allowed values
 // device.ui.accent (none) value: 'Amber', options: '${@UIColors}'
 ```
 
-## How a field relates to its list
+## How a Field Relates to Its List
 
 The field's `listType` decides how many members its value may hold:
 
@@ -25,7 +25,7 @@ The field's `listType` decides how many members its value may hold:
 - `listType: csl` / `array` → the value may contain **several** members.
 - A value outside the list **throws** during [`parseFlat()`](/configuard/guides/admin-ui/).
 
-## Where they show up
+## Where They Show Up
 
 Option-list rows are **excluded from `build()`** — they aren't real config, so
 they never appear in `.data`. To resolve them, use

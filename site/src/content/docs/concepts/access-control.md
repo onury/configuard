@@ -36,7 +36,7 @@ cfg.has('kiosk.timeout'); // false  — KIOSK & MOBILE === 0
 cfg.has('app.name');      // true   — `all` item, no appAccess
 ```
 
-## Accessor rules
+## Accessor Rules
 
 - `accessor` defaults to `application` when none is passed.
 - Constructing with `accessor: 'all'` **throws** — `all` describes a *row's*
@@ -45,7 +45,7 @@ cfg.has('app.name');      // true   — `all` item, no appAccess
 - An `application` row with no `appAccess` **throws** when encountered during the
   build.
 
-## Metadata is access-consistent
+## Metadata Is Access-Consistent
 
 The metadata accessors —
 [`getMeta`](/configuard/concepts/building/#inspecting-metadata),
@@ -53,7 +53,7 @@ The metadata accessors —
 answer for keys **visible to this instance's accessor**, mirroring `has()`. They
 return `undefined`/`false` for anything the client can't see.
 
-## Property-level filtering
+## Property-Level Filtering
 
 ABAC here decides *which rows* a client gets. To filter the *properties* of the
 built object further (per role, per attribute), combine it with

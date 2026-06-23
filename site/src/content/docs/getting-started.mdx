@@ -25,7 +25,7 @@ installed with it.
   [read this first](https://gist.github.com/onury/d3f3d765d7db2e8b2d050d14315f2ac7).
 </Aside>
 
-## The shape of a row
+## The Shape of a Row
 
 Each row is an [`IConfigItem`](/configuard/concepts/config-item/) — a `key` in
 dot/bracket notation, a raw string `value`, and the metadata that says how to
@@ -34,7 +34,7 @@ docs:
 
 <Code code={rows} lang="json" title="config rows" />
 
-## Build and read
+## Build and Read
 
 Pass the rows to the constructor with the accessor doing the reading. The result
 is built once, deep-frozen, and read by notation path:
@@ -70,7 +70,7 @@ Note what the build did for you: strings were cast to their declared
 was [frozen](/configuard/concepts/building/#immutability) so nothing downstream
 can mutate live config.
 
-## The lifecycle
+## The Lifecycle
 
 Configuard sits across the whole life of a setting, not just the read:
 

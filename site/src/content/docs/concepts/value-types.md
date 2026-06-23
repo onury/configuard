@@ -7,7 +7,7 @@ A row stores its `value` as a **string**. Two fields decide what it becomes in
 the built object: `type` (the scalar kind) and `listType` (single value or
 list).
 
-## Value types
+## Value Types
 
 `type` declares how the raw string is parsed. See the
 [`ValueType`](/configuard/api/enumerations/valuetype/) enum.
@@ -34,7 +34,7 @@ objects — they carry no full timestamp. Use `datetime` when you need a `Date`.
 A value that can't be parsed to its declared type
 [**throws**](/configuard/concepts/validation/) at construction.
 
-## Scalar by default
+## Scalar by Default
 
 A value is parsed to one value of its `type` — `"gemini"` stays the string
 `"gemini"`, `"8080"` (as `integer`) becomes the number `8080`. You do **not**
@@ -45,7 +45,7 @@ get a one-element array. Lists are opt-in via `listType`.
 // type: 'string',  listType: 'none', value: 'gemini' →  'gemini'
 ```
 
-## List types
+## List Types
 
 `listType` controls whether a value is a single value or a list. See the
 [`ListType`](/configuard/api/enumerations/listtype/) enum.
