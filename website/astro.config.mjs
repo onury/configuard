@@ -36,8 +36,10 @@ export default defineConfig({
   integrations: [
     starlight({
       title: "Configuard",
+      logo: { src: './src/assets/configuard-logo.svg', replacesTitle: true, alt: 'Configuard' },
       description: "Builds a nested, typed configuration object from a flat list of config items, with templating and accessor-based (ABAC) filtering. Built on notation.",
       social: [{ icon: 'github', label: 'GitHub', href: "https://github.com/onury/configuard" }],
+      components: { Head: '@onury/docs-kit/components/Head.astro' },
       customCss: [
         '@onury/docs-kit/styles/custom.css',
         '@onury/docs-kit/styles/theme.css',
