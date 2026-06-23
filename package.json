@@ -2,6 +2,7 @@
   "name": "configuard",
   "version": "1.1.0",
   "description": "Builds a nested, typed configuration object from a flat list of config items, with templating and accessor-based (ABAC) filtering. Built on notation.",
+  "homepage": "https://onury.io/configuard",
   "repository": "onury/configuard",
   "license": "MIT",
   "author": {
