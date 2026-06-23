@@ -17,6 +17,11 @@ hero:
       variant: minimal
 ---
 
+```ts
+const cfg = new Configuard(rows, { accessor: AccessorType.SYSTEM });
+cfg.get<number>('device.port'); // 8080 — typed & nested, built from flat config rows
+```
+
 {/* Feature cards use the shared `.feature-grid` classes from @onury/docs-kit. */}
 <div class="feature-grid">
   <div class="feature">
