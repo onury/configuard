@@ -33,6 +33,7 @@
       ['rpc.maxQueue','200','num'], ['theme',"'dark'",'str'],
     ];
     const LEAF_KEYS = ['str','num','bool','date','enc','tpl','opt'];
+    const NODE_KEYS = ['obj','str','num','bool','date','enc','tpl','opt']; // amber + type colors
 
     // ── tunables ────────────────────────────────────────────────────────────
     const DOTB = 6, BARB = 6;          // depth buckets for node / row sprites
@@ -114,32 +115,29 @@
       }
     }
 
-    function buildTree(level, maxL, x, y, ang, spread, len, nodes, edges) {
-      const leaf = level >= maxL;
-      const node = { x, y, leaf, colorKey: leaf || (level > 0 && Math.random() < 0.3) ? pick(LEAF_KEYS) : 'obj', phase: Math.random() * 7 };
-      nodes.push(node);
-      if (!leaf) {
-        const n = 2 + (Math.random() < 0.5 ? 0 : 1);
-        for (let i = 0; i < n; i++) {
-          const a = ang + (i - (n - 1) / 2) * spread;
-          const child = buildTree(level + 1, maxL, x + Math.cos(a) * len, y + Math.sin(a) * len, a, spread * 0.8, len * 0.76, nodes, edges);
-          edges.push([node, child]);
-        }
-      }
-      return node;
-    }
-
+    // A small peer group: 1–4 circles scattered near each other; for groups every
+    // node is linked to every other (a little mesh, not a star/hub). n===1 is a
+    // lone circle. Depth (d) varies widely so some groups read big/near, others
+    // small/far.
     function makeCluster() {
-      const d = Math.pow(Math.random(), 1.3);
-      const nodes = [], edges = [];
-      buildTree(0, 2 + (Math.random() < 0.5 ? 0 : 1), 0, 0, Math.PI / 2, rnd(0.55, 0.85), rnd(26, 40), nodes, edges);
+      const d = Math.pow(Math.random(), 1.2);
+      const n = 1 + ((Math.random() * 4) | 0);          // 1–4 (some singles)
+      const spread = rnd(16, 38);
+      const nodes = [];
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2 + rnd(-0.4, 0.4);
+        const r = n === 1 ? 0 : spread * rnd(0.6, 1.2);
+        nodes.push({ x: Math.cos(a) * r, y: Math.sin(a) * r, colorKey: pick(NODE_KEYS), phase: Math.random() * 7, r: rnd(0.85, 1.3) });
+      }
+      const edges = [];
+      for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) edges.push([nodes[i], nodes[j]]); // every peer linked
       return {
         d, bucket: Math.min(DOTB - 1, Math.floor(d * DOTB)), nodes, edges,
         x: Math.random() * W, y: Math.random() * H,
-        sf: lerp(0.42, 1.15, d),               // size factor (depth)
-        vx: rnd(-0.08, 0.08), vy: rnd(-0.16, -0.04), // gentle drift, slight rise
-        bob: Math.random() * 7, bobS: rnd(0.004, 0.01),
-        alpha: lerp(0.45, 1, d),
+        sf: lerp(0.35, 1.45, d),                          // wider near↔far size spread
+        vx: rnd(-0.18, 0.18), vy: rnd(-0.36, -0.07),      // higher motion
+        bob: Math.random() * 7, bobS: rnd(0.007, 0.018),
+        alpha: lerp(0.5, 1, d),
         pulse: edges.length ? { e: (Math.random() * edges.length) | 0, t: Math.random() } : null,
       };
     }
@@ -204,7 +202,7 @@
       canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       buildDots(); buildBars(); buildBg();
-      const nc = clamp(Math.round((W * H) / 95000), 7, 22);
+      const nc = clamp(Math.round((W * H) / 68000), 10, 32);
       const nr = clamp(Math.round((W * H) / 46000), 12, 34); // ~+30% row density
       clusters = Array.from({ length: nc }, makeCluster);
       rows = Array.from({ length: nr }, makeRow);
@@ -227,8 +225,8 @@
       for (const n of c.nodes) {
         const sp = dots[n.colorKey][c.bucket];
         const tw = 0.65 + 0.35 * Math.sin(t * 1.6 + n.phase);
-        ctx.globalAlpha = c.alpha * tw * (n.leaf ? 1 : 0.95);
-        const s = sp.S * sf * (n.leaf ? 0.95 : 1.25);
+        ctx.globalAlpha = c.alpha * tw;
+        const s = sp.S * sf * n.r;
         ctx.drawImage(sp.c, c.x + n.x * sf - s / 2, c.y + n.y * sf + bob - s / 2, s, s);
       }
       // travelling "assembly" pulse along one edge

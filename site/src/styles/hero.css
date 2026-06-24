@@ -75,6 +75,8 @@
 :root[data-theme='light'] .hero .actions a.minimal { color: #000; }
 :root[data-theme='light'] .hero .actions a.primary { color: #000; }
 :root[data-theme='light'] header.header { border-bottom: 1px solid rgba(0, 0, 0, 0.08); }
+/* Hero tagline link ("notation") uses the readable brand accent, not UA blue. */
+.hero .tagline a { color: var(--oy-text-accent); }
 /* Contain the full-bleed canvas to the viewport (no horizontal scrollbar). */
 html:not([data-has-sidebar]) :where(main, .content-panel) { overflow-x: clip; }
 
