@@ -438,6 +438,11 @@ date utilities (`parseDate`/`createUTCDate`) are fully unit-tested but excluded
 from the mutation scope, as their date-format regexes are dominated by
 equivalent mutants.
 
+## Related Projects
+
+- [**accesscontrol**](https://github.com/onury/accesscontrol) — Role and attribute based access control (RBAC + ABAC) with conditions, enforced ownership, custom actions and mandatory gates.
+- [**notation**](https://github.com/onury/notation) — Read, modify, and filter the contents of objects and arrays via dot/bracket notation strings or glob patterns.
+
 ## License
 
 © 2026, Onur Yıldırım. [**MIT**][license] License.
