@@ -13,9 +13,7 @@
   <a href="https://onury.io/configuard"><img src="https://img.shields.io/badge/docs-read-c27cf4?style=flat" alt="documentation" /></a>
 </p>
 
-**Important**: This module is **ESM** 🔆. Please [**read this**](https://gist.github.com/onury/d3f3d765d7db2e8b2d050d14315f2ac7).
-
-> © 2026, Onur Yıldırım ([@onury](https://github.com/onury)). MIT License.
+> This module is **ESM** 🔆. Please [**read this**](https://gist.github.com/onury/d3f3d765d7db2e8b2d050d14315f2ac7).
 
 Builds a **nested, typed** configuration object from a **flat list** of
 configuration items (typically rows from a `config` database table) — with
@@ -442,7 +440,7 @@ equivalent mutants.
 
 ## License
 
-[**MIT**][license].
+© 2026, Onur Yıldırım. [**MIT**][license] License.
 
 [license]:https://github.com/onury/configuard/blob/main/LICENSE
 [docs]:https://onury.io/configuard
