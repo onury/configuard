@@ -53,7 +53,7 @@
     const bg = document.createElement('canvas');
     const bgx = bg.getContext('2d');
 
-    let W = 0, H = 0, dpr = 1, dots = {}, bars = [], clusters = [], rows = [], t = 0, raf = 0, running = false, visible = false;
+    let W = 0, H = 0, dpr = 1, dots = {}, bars = [], clusters = [], rows = [], t = 0, raf = 0, running = false, visible = false, lightTheme = false;
 
     function roundRect(c, x, y, w, h, r) {
       if (c.roundRect) { c.beginPath(); c.roundRect(x, y, w, h, r); return; }
@@ -107,7 +107,8 @@
         c.width = Math.ceil(cw * dpr); c.height = Math.ceil(ch * dpr);
         const x = c.getContext('2d'); x.scale(dpr, dpr);
         if (blur > 0.05) x.filter = `blur(${blur}px)`;
-        x.fillStyle = `rgba(200,206,216,${lerp(0.1, 0.22, tt)})`;
+        // Light row bars on the dark stage; dark bars on the light-gray stage.
+        x.fillStyle = lightTheme ? `rgba(40,42,50,${lerp(0.12, 0.26, tt)})` : `rgba(200,206,216,${lerp(0.1, 0.22, tt)})`;
         roundRect(x, pad, pad, w, h, h / 2); x.fill();
         bars[i] = { c, w: cw, h: ch };
       }
@@ -158,21 +159,24 @@
     // A soft neuron / flower-like bloom: a nucleus with petal-blobs at
     // inconsistent distances around it, plus faint dendrite lines. Cached.
     function neuronBloom(cx, cy, R, rgb, core) {
-      bgx.globalCompositeOperation = 'lighter';
+      // Additive glow on the dark stage; subtle source-over tint on the light one
+      // (additive would wash to white on a light background).
+      if (!lightTheme) bgx.globalCompositeOperation = 'lighter';
+      const c0 = lightTheme ? core * 0.7 : core;
       const nucleus = bgx.createRadialGradient(cx, cy, 0, cx, cy, R * 0.5);
-      nucleus.addColorStop(0, `rgba(${rgb},${core})`); nucleus.addColorStop(1, `rgba(${rgb},0)`);
+      nucleus.addColorStop(0, `rgba(${rgb},${c0})`); nucleus.addColorStop(1, `rgba(${rgb},0)`);
       bgx.fillStyle = nucleus; bgx.fillRect(0, 0, W, H);
       const P = 6 + ((Math.random() * 4) | 0);
       for (let i = 0; i < P; i++) {
         const ang = (i / P) * Math.PI * 2 + rnd(-0.35, 0.35);
         const dist = R * rnd(0.4, 1.15);                 // inconsistent distance from nucleus
         const px = cx + Math.cos(ang) * dist, py = cy + Math.sin(ang) * dist;
-        bgx.strokeStyle = `rgba(${rgb},${core * 0.22})`; // faint dendrite
+        bgx.strokeStyle = `rgba(${rgb},${c0 * 0.22})`; // faint dendrite
         bgx.lineWidth = Math.max(1, R * 0.018);
         bgx.beginPath(); bgx.moveTo(cx, cy); bgx.lineTo(px, py); bgx.stroke();
         const pr = R * rnd(0.28, 0.6);
         const petal = bgx.createRadialGradient(px, py, 0, px, py, pr);
-        petal.addColorStop(0, `rgba(${rgb},${core * rnd(0.45, 0.78)})`); petal.addColorStop(1, `rgba(${rgb},0)`);
+        petal.addColorStop(0, `rgba(${rgb},${c0 * rnd(0.45, 0.78)})`); petal.addColorStop(1, `rgba(${rgb},0)`);
         bgx.fillStyle = petal; bgx.fillRect(0, 0, W, H);
       }
       bgx.globalCompositeOperation = 'source-over';
@@ -182,7 +186,8 @@
       bg.width = Math.round(W * dpr); bg.height = Math.round(H * dpr);
       bgx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const base = bgx.createLinearGradient(0, 0, 0, H);
-      base.addColorStop(0, '#141008'); base.addColorStop(0.55, '#0c0a08'); base.addColorStop(1, '#08070b');
+      if (lightTheme) { base.addColorStop(0, '#e7e8ec'); base.addColorStop(0.55, '#dfe1e6'); base.addColorStop(1, '#d7d9df'); }
+      else { base.addColorStop(0, '#141008'); base.addColorStop(0.55, '#0c0a08'); base.addColorStop(1, '#08070b'); }
       bgx.fillStyle = base; bgx.fillRect(0, 0, W, H);
       const R = Math.min(W, H) * 0.42;
       neuronBloom(W * 0.24, H * 0.4, R, AMBER, 0.16);
@@ -190,6 +195,7 @@
     }
 
     function resize() {
+      lightTheme = document.documentElement.getAttribute('data-theme') === 'light';
       dpr = Math.min(2, window.devicePixelRatio || 1);
       layout();
       W = canvas.clientWidth || hero.clientWidth;
@@ -208,7 +214,7 @@
       const sf = c.sf, bob = Math.sin(c.bob) * 4 * sf;
       // edges
       ctx.globalCompositeOperation = 'source-over';
-      ctx.strokeStyle = `rgba(${AMBER},${(0.08 + 0.16 * c.d) * c.alpha})`;
+      ctx.strokeStyle = `rgba(${AMBER},${(lightTheme ? 0.18 + 0.22 * c.d : 0.08 + 0.16 * c.d) * c.alpha})`;
       ctx.lineWidth = Math.max(0.5, 1.1 * c.d);
       ctx.beginPath();
       for (const [a, b] of c.edges) {
@@ -216,8 +222,8 @@
         ctx.lineTo(c.x + b.x * sf, c.y + b.y * sf + bob);
       }
       ctx.stroke();
-      // nodes (additive glow)
-      ctx.globalCompositeOperation = 'lighter';
+      // nodes: additive glow on dark; plain (visible) colored dots on light
+      ctx.globalCompositeOperation = lightTheme ? 'source-over' : 'lighter';
       for (const n of c.nodes) {
         const sp = dots[n.colorKey][c.bucket];
         const tw = 0.65 + 0.35 * Math.sin(t * 1.6 + n.phase);
@@ -244,7 +250,7 @@
         ctx.font = `${Math.round(lerp(11, 15, r.d))}px 'JetBrains Mono Variable', ui-monospace, monospace`;
         ctx.textBaseline = 'middle';
         const head = r.key + ' = ';
-        ctx.fillStyle = `rgba(214,218,226,0.9)`;
+        ctx.fillStyle = lightTheme ? 'rgba(28,30,36,0.92)' : 'rgba(214,218,226,0.9)';
         ctx.fillText(head, r.x, r.y);
         ctx.fillStyle = TYPE[r.type] || '#d6dae2';
         ctx.fillText(r.val, r.x + ctx.measureText(head).width, r.y);
@@ -296,6 +302,11 @@
     window.addEventListener('load', () => { resize(); if (reduce) render(false); });
 
     resize();
+    // Rebuild the stage + row bars when the light/dark theme is toggled.
+    new MutationObserver(() => {
+      lightTheme = document.documentElement.getAttribute('data-theme') === 'light';
+      buildBg(); buildBars(); if (!running) render(false);
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     if (reduce) { render(false); return; }
     new IntersectionObserver((e) => { visible = e[0].isIntersecting; visible && !document.hidden ? start() : stop(); }, { threshold: 0 }).observe(hero);
     document.addEventListener('visibilitychange', () => { document.hidden ? stop() : (visible && start()); });
