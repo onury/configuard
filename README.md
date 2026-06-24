@@ -160,6 +160,7 @@ try {
 }
 ```
 
+> [!WARNING]
 > `parseFlat()` likewise throws on missing/circular templates, a missing option
 > list, or a value outside its option list.
 
@@ -237,6 +238,7 @@ enum.
 | `json`        | `any`       | `JSON.parse` (object, array, …). |
 | `any`         | inferred    | Best-effort auto-detection. |
 
+> [!NOTE]
 > `date` and `time` are intentionally kept as **validated strings** (not `Date`
 > objects), since they carry no full timestamp — use `datetime` when you need a
 > `Date`.
@@ -378,6 +380,7 @@ non-editable value change, or an `encrypt` hook error throw a `ConfiguardError`.
 - `.isEncrypted(key)` — whether the item is flagged to be encrypted at rest.
 - `.requiresReboot(key)` — whether changing the item requires a reboot.
 
+> [!NOTE]
 > The metadata accessors are **ABAC-consistent**: they only answer for keys
 > visible to this instance's accessor (mirroring `.has()`), returning
 > `undefined`/`false` otherwise.
