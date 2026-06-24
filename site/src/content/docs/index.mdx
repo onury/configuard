@@ -17,6 +17,10 @@ hero:
       variant: minimal
 ---
 
+import HeroConfigTree from '../../components/HeroConfigTree.astro';
+
+<HeroConfigTree />
+
 ```ts
 const cfg = new Configuard(rows, { accessor: AccessorType.SYSTEM });
 cfg.get<number>('device.port'); // 8080 — typed & nested, built from flat config rows

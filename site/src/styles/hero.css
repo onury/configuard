@@ -43,6 +43,38 @@
   display: none;
 }
 
+/* ── Flat → Nested hero stage ────────────────────────────────────────────────
+ * The config-row + nested-tree animation, dark backdrop and amber/indigo blooms
+ * are all painted on a single <canvas> injected by HeroConfigTree.astro. It
+ * spans from the top of the page (behind the header) to the hero's bottom, then
+ * fades out — its top/height are set in JS; styling lives here. The stage stays
+ * dark in light & dark themes, so always show the dark-bg (light) logo variant
+ * (overrides the theme swap above — equal specificity, later in source). */
+:root[data-theme] .hero .hero-html img.hero-logo--light { display: none; }
+:root[data-theme] .hero .hero-html img.hero-logo--dark { display: block; }
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+}
+.hero canvas.config-hero {
+  position: absolute;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  z-index: 1;          /* above the stage, below the logo + copy */
+  display: block;
+  pointer-events: none;
+}
+.hero .hero-html { position: relative; z-index: 2; }
+.hero .stack { position: relative; z-index: 3; }
+/* Keep the hero copy legible on the dark stage regardless of theme. */
+.hero .tagline { color: #d9dbe0; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55); }
+.hero .actions a.minimal { color: #e6e8ec; }
+/* Contain the full-bleed canvas to the viewport (no horizontal scrollbar). */
+html:not([data-has-sidebar]) :where(main, .content-panel) { overflow-x: clip; }
+
 .hero .actions a.primary {
   transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }

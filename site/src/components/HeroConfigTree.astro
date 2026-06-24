@@ -1,0 +1,284 @@
+---
+/**
+ * "Flat → Nested" hero background for the Configuard home page.
+ *
+ * Injects a full-bleed <canvas> spanning from the top of the page (behind the
+ * header) to the bottom of the hero, then fading out. It paints Configuard's
+ * core idea: a continuous flow of flat `key = value` config rows on one plane,
+ * and softly-glowing NESTED TREES (object → object → leaf) being assembled on
+ * another — leaf nodes tinted by value type, amber (#eaa426, the brand) on the
+ * objects/edges, all with true depth of field. The nearest rows show real text;
+ * the blurred far ones read as abstract bars.
+ *
+ * Cheap by design: node glows + far-row bars are baked once into small sprite
+ * sets; the dark stage + blooms are cached and blitted; the loop pauses when the
+ * hero is off-screen or the tab is hidden; reduced-motion renders one frame.
+ */
+---
+
+<script>
+  (() => {
+    const hero = document.querySelector('.hero');
+    if (!hero || !('getContext' in document.createElement('canvas'))) return;
+
+    // ── palette & data ────────────────────────────────────────────────────────
+    const AMBER = '234,164,38';                 // #eaa426 — brand, objects + edges
+    const TYPE = { str:'#34d399', num:'#60a5fa', bool:'#c084fc', date:'#2dd4bf', enc:'#fbbf24', tpl:'#facc15', opt:'#f472b6', obj:`rgb(${AMBER})` };
+    const POOL = [
+      ['port','8080','num'], ['company.name',"'Acme'",'str'], ['ai.vision.provider',"'gemini'",'str'],
+      ['device.ui.accent',"'Amber'",'str'], ['cache.ttl','1440','num'], ['features.beta','true','bool'],
+      ['db.password','🔒','enc'], ['endpoint','"${host}/api"','tpl'], ['retries','3','num'],
+      ['log.level',"'info'",'str'], ['tls.enabled','false','bool'], ['timeout','30','num'],
+      ['@UIColors','[…]','opt'], ['startedAt','2026-06-24','date'], ['ratio','0.75','num'],
+      ['rpc.maxQueue','200','num'], ['theme',"'dark'",'str'],
+    ];
+    const LEAF_KEYS = ['str','num','bool','date','enc','tpl','opt'];
+
+    // ── tunables ────────────────────────────────────────────────────────────
+    const DOTB = 6, BARB = 6;          // depth buckets for node / row sprites
+    const MAX_BLUR = 6;                // back-most node blur, px
+    const FADE = 120;                  // bottom fade-out height, px
+
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const lerp = (a, b, t) => a + (b - a) * t;
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    const pick = (a) => a[(Math.random() * a.length) | 0];
+
+    const canvas = document.createElement('canvas');
+    canvas.className = 'config-hero';
+    canvas.setAttribute('aria-hidden', 'true');
+    hero.prepend(canvas);
+    const ctx = canvas.getContext('2d');
+    const bg = document.createElement('canvas');
+    const bgx = bg.getContext('2d');
+
+    let W = 0, H = 0, dpr = 1, dots = {}, bars = [], clusters = [], rows = [], t = 0, raf = 0, running = false, visible = false;
+
+    function roundRect(c, x, y, w, h, r) {
+      if (c.roundRect) { c.beginPath(); c.roundRect(x, y, w, h, r); return; }
+      c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r);
+      c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
+    }
+
+    function layout() {
+      const r = hero.getBoundingClientRect();
+      const top = Math.max(0, r.top + window.scrollY);
+      canvas.style.top = -top + 'px';
+      canvas.style.height = top + hero.offsetHeight + 'px';
+    }
+
+    // Glow-dot sprites: per depth bucket × color, with blur baked in.
+    function buildDots() {
+      dots = {};
+      const colors = { obj: `rgb(${AMBER})` };
+      for (const k of LEAF_KEYS) colors[k] = TYPE[k];
+      for (const key in colors) {
+        dots[key] = [];
+        for (let i = 0; i < DOTB; i++) {
+          const tt = i / (DOTB - 1);                 // 0 back → 1 front
+          const blur = (1 - tt) * MAX_BLUR;
+          const core = lerp(7, 16, tt);
+          const pad = blur * 2.4 + core;
+          const S = Math.ceil(core + pad * 2);
+          const c = document.createElement('canvas');
+          c.width = c.height = Math.ceil(S * dpr);
+          const x = c.getContext('2d'); x.scale(dpr, dpr);
+          if (blur > 0.05) x.filter = `blur(${blur}px)`;
+          const g = x.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, core);
+          g.addColorStop(0, colors[key]); g.addColorStop(0.4, colors[key]);
+          g.addColorStop(1, 'rgba(0,0,0,0)');
+          x.fillStyle = g; x.beginPath(); x.arc(S / 2, S / 2, core, 0, 7); x.fill();
+          dots[key][i] = { c, S };
+        }
+      }
+    }
+
+    // Dim, blurred bar sprites for the far (abstract) config rows.
+    function buildBars() {
+      bars = [];
+      for (let i = 0; i < BARB; i++) {
+        const tt = i / (BARB - 1);
+        const blur = (1 - tt) * 3.5;
+        const w = lerp(26, 64, tt), h = lerp(5, 8, tt);
+        const pad = blur * 2.4 + 2;
+        const cw = Math.ceil(w + pad * 2), ch = Math.ceil(h + pad * 2);
+        const c = document.createElement('canvas');
+        c.width = Math.ceil(cw * dpr); c.height = Math.ceil(ch * dpr);
+        const x = c.getContext('2d'); x.scale(dpr, dpr);
+        if (blur > 0.05) x.filter = `blur(${blur}px)`;
+        x.fillStyle = `rgba(200,206,216,${lerp(0.1, 0.22, tt)})`;
+        roundRect(x, pad, pad, w, h, h / 2); x.fill();
+        bars[i] = { c, w: cw, h: ch };
+      }
+    }
+
+    function buildTree(level, maxL, x, y, ang, spread, len, nodes, edges) {
+      const leaf = level >= maxL;
+      const node = { x, y, leaf, colorKey: leaf || (level > 0 && Math.random() < 0.3) ? pick(LEAF_KEYS) : 'obj', phase: Math.random() * 7 };
+      nodes.push(node);
+      if (!leaf) {
+        const n = 2 + (Math.random() < 0.5 ? 0 : 1);
+        for (let i = 0; i < n; i++) {
+          const a = ang + (i - (n - 1) / 2) * spread;
+          const child = buildTree(level + 1, maxL, x + Math.cos(a) * len, y + Math.sin(a) * len, a, spread * 0.8, len * 0.76, nodes, edges);
+          edges.push([node, child]);
+        }
+      }
+      return node;
+    }
+
+    function makeCluster() {
+      const d = Math.pow(Math.random(), 1.3);
+      const nodes = [], edges = [];
+      buildTree(0, 2 + (Math.random() < 0.5 ? 0 : 1), 0, 0, Math.PI / 2, rnd(0.55, 0.85), rnd(26, 40), nodes, edges);
+      return {
+        d, bucket: Math.min(DOTB - 1, Math.floor(d * DOTB)), nodes, edges,
+        x: Math.random() * W, y: Math.random() * H,
+        sf: lerp(0.42, 1.15, d),               // size factor (depth)
+        vx: rnd(-0.08, 0.08), vy: rnd(-0.16, -0.04), // gentle drift, slight rise
+        bob: Math.random() * 7, bobS: rnd(0.004, 0.01),
+        alpha: lerp(0.45, 1, d),
+        pulse: edges.length ? { e: (Math.random() * edges.length) | 0, t: Math.random() } : null,
+      };
+    }
+
+    function makeRow() {
+      const d = Math.pow(Math.random(), 1.2);
+      const it = pick(POOL);
+      const bx = Math.random() * W;
+      return {
+        d, bucket: Math.min(BARB - 1, Math.floor(d * BARB)), key: it[0], val: it[1], type: it[2],
+        bx, x: bx, y: Math.random() * H, vy: -lerp(0.18, 0.5, d),
+        sway: Math.random() * 7, swayS: rnd(0.004, 0.012), swayA: lerp(8, 26, d),
+        alpha: lerp(0.4, 0.95, d), kind: 'row',
+      };
+    }
+
+    function buildBg() {
+      bg.width = Math.round(W * dpr); bg.height = Math.round(H * dpr);
+      bgx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const base = bgx.createLinearGradient(0, 0, 0, H);
+      base.addColorStop(0, '#141008'); base.addColorStop(0.55, '#0c0a08'); base.addColorStop(1, '#08070b');
+      bgx.fillStyle = base; bgx.fillRect(0, 0, W, H);
+      const reach = Math.max(W, H) * 0.6;
+      const a = bgx.createRadialGradient(W * 0.24, H * 0.38, 0, W * 0.24, H * 0.38, reach);
+      a.addColorStop(0, `rgba(${AMBER},0.16)`); a.addColorStop(1, `rgba(${AMBER},0)`);
+      bgx.fillStyle = a; bgx.fillRect(0, 0, W, H);
+      const b = bgx.createRadialGradient(W * 0.82, H * 0.74, 0, W * 0.82, H * 0.74, reach);
+      b.addColorStop(0, 'rgba(99,102,241,0.13)'); b.addColorStop(1, 'rgba(99,102,241,0)');
+      bgx.fillStyle = b; bgx.fillRect(0, 0, W, H);
+    }
+
+    function resize() {
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      layout();
+      W = canvas.clientWidth || hero.clientWidth;
+      H = canvas.clientHeight || hero.clientHeight;
+      if (!W || !H) return;
+      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      buildDots(); buildBars(); buildBg();
+      const nc = clamp(Math.round((W * H) / 95000), 7, 22);
+      const nr = clamp(Math.round((W * H) / 60000), 9, 26);
+      clusters = Array.from({ length: nc }, makeCluster);
+      rows = Array.from({ length: nr }, makeRow);
+    }
+
+    function drawCluster(c) {
+      const sf = c.sf, bob = Math.sin(c.bob) * 4 * sf;
+      // edges
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = `rgba(${AMBER},${(0.08 + 0.16 * c.d) * c.alpha})`;
+      ctx.lineWidth = Math.max(0.5, 1.1 * c.d);
+      ctx.beginPath();
+      for (const [a, b] of c.edges) {
+        ctx.moveTo(c.x + a.x * sf, c.y + a.y * sf + bob);
+        ctx.lineTo(c.x + b.x * sf, c.y + b.y * sf + bob);
+      }
+      ctx.stroke();
+      // nodes (additive glow)
+      ctx.globalCompositeOperation = 'lighter';
+      for (const n of c.nodes) {
+        const sp = dots[n.colorKey][c.bucket];
+        const tw = 0.65 + 0.35 * Math.sin(t * 1.6 + n.phase);
+        ctx.globalAlpha = c.alpha * tw * (n.leaf ? 1 : 0.95);
+        const s = sp.S * sf * (n.leaf ? 0.95 : 1.25);
+        ctx.drawImage(sp.c, c.x + n.x * sf - s / 2, c.y + n.y * sf + bob - s / 2, s, s);
+      }
+      // travelling "assembly" pulse along one edge
+      if (c.pulse) {
+        const [a, b] = c.edges[c.pulse.e];
+        const p = c.pulse.t, px = lerp(a.x, b.x, p) * sf + c.x, py = lerp(a.y, b.y, p) * sf + c.y + bob;
+        const sp = dots.obj[c.bucket];
+        ctx.globalAlpha = c.alpha * (1 - Math.abs(p - 0.5) * 2) * 0.9;
+        const s = sp.S * sf * 0.8;
+        ctx.drawImage(sp.c, px - s / 2, py - s / 2, s, s);
+      }
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
+    }
+
+    function drawRow(r) {
+      if (r.d > 0.6) {
+        ctx.globalAlpha = r.alpha;
+        ctx.font = `${Math.round(lerp(11, 15, r.d))}px 'JetBrains Mono Variable', ui-monospace, monospace`;
+        ctx.textBaseline = 'middle';
+        const head = r.key + ' = ';
+        ctx.fillStyle = `rgba(214,218,226,0.9)`;
+        ctx.fillText(head, r.x, r.y);
+        ctx.fillStyle = TYPE[r.type] || '#d6dae2';
+        ctx.fillText(r.val, r.x + ctx.measureText(head).width, r.y);
+      } else {
+        const sp = bars[r.bucket];
+        ctx.globalAlpha = r.alpha * 0.85;
+        ctx.drawImage(sp.c, r.x, r.y - sp.h / 2, sp.w, sp.h);
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function fadeBottom() {
+      const f = Math.min(FADE, H * 0.4);
+      const g = ctx.createLinearGradient(0, H - f, 0, H);
+      g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,1)');
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.fillStyle = g; ctx.fillRect(0, H - f, W, f);
+      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    function render(animate) {
+      if (animate) t += 0.016;
+      ctx.clearRect(0, 0, W, H);
+      ctx.drawImage(bg, 0, 0, W, H);
+      if (animate) {
+        for (const c of clusters) {
+          c.x += c.vx; c.y += c.vy; c.bob += c.bobS;
+          if (c.pulse) { c.pulse.t += 0.012; if (c.pulse.t > 1.2) { c.pulse.t = -Math.random() * 0.8; c.pulse.e = (Math.random() * c.edges.length) | 0; } }
+          if (c.y < -60) { c.y = H + 60; c.x = Math.random() * W; }
+          if (c.x < -80) c.x = W + 80; else if (c.x > W + 80) c.x = -80;
+        }
+        for (const r of rows) {
+          r.y += r.vy; r.sway += r.swayS; r.x = r.bx + Math.sin(r.sway) * r.swayA;
+          if (r.y < -30) { Object.assign(r, makeRow()); r.y = H + 30; }
+        }
+      }
+      const items = clusters.map((c) => ({ d: c.d, c })).concat(rows.map((r) => ({ d: r.d, r })));
+      items.sort((a, b) => a.d - b.d);
+      for (const it of items) it.c ? drawCluster(it.c) : drawRow(it.r);
+      fadeBottom();
+    }
+
+    function step() { render(true); if (running) raf = requestAnimationFrame(step); }
+    function start() { if (!running) { running = true; raf = requestAnimationFrame(step); } }
+    function stop() { running = false; cancelAnimationFrame(raf); }
+
+    let rt = 0;
+    window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { resize(); if (reduce) render(false); }, 150); });
+    window.addEventListener('load', () => { resize(); if (reduce) render(false); });
+
+    resize();
+    if (reduce) { render(false); return; }
+    new IntersectionObserver((e) => { visible = e[0].isIntersecting; visible && !document.hidden ? start() : stop(); }, { threshold: 0 }).observe(hero);
+    document.addEventListener('visibilitychange', () => { document.hidden ? stop() : (visible && start()); });
+  })();
+</script>
