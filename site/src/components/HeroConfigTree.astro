@@ -149,10 +149,33 @@
       const bx = Math.random() * W;
       return {
         d, bucket: Math.min(BARB - 1, Math.floor(d * BARB)), key: it[0], val: it[1], type: it[2],
-        bx, x: bx, y: Math.random() * H, vy: -lerp(0.18, 0.5, d),
+        bx, x: bx, y: Math.random() * H, vy: -lerp(0.216, 0.6, d), // +20% rise speed
         sway: Math.random() * 7, swayS: rnd(0.004, 0.012), swayA: lerp(8, 26, d),
         alpha: lerp(0.4, 0.95, d), kind: 'row',
       };
+    }
+
+    // A soft neuron / flower-like bloom: a nucleus with petal-blobs at
+    // inconsistent distances around it, plus faint dendrite lines. Cached.
+    function neuronBloom(cx, cy, R, rgb, core) {
+      bgx.globalCompositeOperation = 'lighter';
+      const nucleus = bgx.createRadialGradient(cx, cy, 0, cx, cy, R * 0.5);
+      nucleus.addColorStop(0, `rgba(${rgb},${core})`); nucleus.addColorStop(1, `rgba(${rgb},0)`);
+      bgx.fillStyle = nucleus; bgx.fillRect(0, 0, W, H);
+      const P = 6 + ((Math.random() * 4) | 0);
+      for (let i = 0; i < P; i++) {
+        const ang = (i / P) * Math.PI * 2 + rnd(-0.35, 0.35);
+        const dist = R * rnd(0.4, 1.15);                 // inconsistent distance from nucleus
+        const px = cx + Math.cos(ang) * dist, py = cy + Math.sin(ang) * dist;
+        bgx.strokeStyle = `rgba(${rgb},${core * 0.22})`; // faint dendrite
+        bgx.lineWidth = Math.max(1, R * 0.018);
+        bgx.beginPath(); bgx.moveTo(cx, cy); bgx.lineTo(px, py); bgx.stroke();
+        const pr = R * rnd(0.28, 0.6);
+        const petal = bgx.createRadialGradient(px, py, 0, px, py, pr);
+        petal.addColorStop(0, `rgba(${rgb},${core * rnd(0.45, 0.78)})`); petal.addColorStop(1, `rgba(${rgb},0)`);
+        bgx.fillStyle = petal; bgx.fillRect(0, 0, W, H);
+      }
+      bgx.globalCompositeOperation = 'source-over';
     }
 
     function buildBg() {
@@ -161,13 +184,9 @@
       const base = bgx.createLinearGradient(0, 0, 0, H);
       base.addColorStop(0, '#141008'); base.addColorStop(0.55, '#0c0a08'); base.addColorStop(1, '#08070b');
       bgx.fillStyle = base; bgx.fillRect(0, 0, W, H);
-      const reach = Math.max(W, H) * 0.6;
-      const a = bgx.createRadialGradient(W * 0.24, H * 0.38, 0, W * 0.24, H * 0.38, reach);
-      a.addColorStop(0, `rgba(${AMBER},0.16)`); a.addColorStop(1, `rgba(${AMBER},0)`);
-      bgx.fillStyle = a; bgx.fillRect(0, 0, W, H);
-      const b = bgx.createRadialGradient(W * 0.82, H * 0.74, 0, W * 0.82, H * 0.74, reach);
-      b.addColorStop(0, 'rgba(99,102,241,0.13)'); b.addColorStop(1, 'rgba(99,102,241,0)');
-      bgx.fillStyle = b; bgx.fillRect(0, 0, W, H);
+      const R = Math.min(W, H) * 0.42;
+      neuronBloom(W * 0.24, H * 0.4, R, AMBER, 0.16);
+      neuronBloom(W * 0.82, H * 0.72, R * 0.92, '99,102,241', 0.13);
     }
 
     function resize() {
@@ -180,7 +199,7 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       buildDots(); buildBars(); buildBg();
       const nc = clamp(Math.round((W * H) / 95000), 7, 22);
-      const nr = clamp(Math.round((W * H) / 60000), 9, 26);
+      const nr = clamp(Math.round((W * H) / 46000), 12, 34); // ~+30% row density
       clusters = Array.from({ length: nc }, makeCluster);
       rows = Array.from({ length: nr }, makeRow);
     }
