@@ -443,6 +443,7 @@ equivalent mutants.
 
 ## Related Projects
 
+- [**nestjs-configuard**](https://github.com/onury/nestjs-configuard) — The NestJS integration for this package: DB-backed, typed, ABAC-filtered runtime config with live reload and TTL auto-refresh.
 - [**accesscontrol**](https://github.com/onury/accesscontrol) — Role and attribute based access control (RBAC + ABAC) with conditions, enforced ownership, custom actions and mandatory gates.
 - [**notation**](https://github.com/onury/notation) — Read, modify, and filter the contents of objects and arrays via dot/bracket notation strings or glob patterns.
 
