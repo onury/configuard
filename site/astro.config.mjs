@@ -75,7 +75,10 @@ export default defineConfig({
         },
         {
           label: 'Guides',
-          items: [{ label: 'Admin UI Workflow', slug: 'guides/admin-ui' }]
+          items: [
+            { label: 'Admin UI Workflow', slug: 'guides/admin-ui' },
+            { label: 'NestJS Integration', slug: 'guides/nestjs' }
+          ]
         },
         {
           label: 'Help',

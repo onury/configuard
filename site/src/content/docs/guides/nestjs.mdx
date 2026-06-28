@@ -1,0 +1,154 @@
+---
+title: NestJS Integration
+description: The nestjs-configuard package — wires a DB-backed, typed, ABAC-filtered Configuard into Nest's DI, with live reload and optional TTL auto-refresh.
+---
+
+[**nestjs-configuard**](https://github.com/onury/nestjs-configuard) wires a
+DB-backed, **typed**, **ABAC-filtered** Configuard object into Nest's DI, with
+**live reload** and optional **TTL auto-refresh**.
+
+Where `@nestjs/config` handles `.env` (secrets, bootstrap), Configuard handles
+the long, ever-growing list of **non-secret, admin-editable runtime tunables**
+stored as flat rows in a `config` table. This package makes consuming and
+refreshing those values idiomatic in NestJS.
+
+:::note[ESM-only]
+Requires Node ≥ 20 and NestJS 10 / 11.
+:::
+
+## Install
+
+```bash
+npm install nestjs-configuard configuard
+```
+
+`@nestjs/common`, `@nestjs/core`, `reflect-metadata`, and `configuard` are peer
+dependencies.
+
+## Register the module
+
+### Static rows — `forRoot`
+
+```ts
+import { Module } from '@nestjs/common';
+import { ConfiguardModule, AccessorType } from 'nestjs-configuard';
+import { rows } from './config.rows';
+
+@Module({
+  imports: [
+    ConfiguardModule.forRoot({
+      rows,
+      accessor: { accessor: AccessorType.SYSTEM }
+    })
+  ]
+})
+export class AppModule {}
+```
+
+A row mirrors a [`config` table record](/configuard/concepts/config-item/). The
+enums and types are re-exported from this package, so a single import suffices:
+
+```ts
+// config.rows.ts
+import { AccessorType, ListType, ValueType, type IConfigItem } from 'nestjs-configuard';
+
+export const rows: IConfigItem[] = [
+  {
+    accessor: AccessorType.SYSTEM,
+    key: 'device.port',
+    type: ValueType.INTEGER,
+    listType: ListType.NONE,
+    value: '8080',
+    editable: true,
+    requiresReboot: true,
+    encrypt: false
+  }
+];
+```
+
+### DB-driven rows — `forRootAsync`
+
+The factory can inject anything (e.g. a Prisma service) and load rows from a
+`config` table. Add `refreshIntervalMs` to reload them in the background.
+
+```ts
+import { Module } from '@nestjs/common';
+import { ConfiguardModule, AccessorType } from 'nestjs-configuard';
+import { PrismaModule, PrismaService } from './prisma';
+
+@Module({
+  imports: [
+    ConfiguardModule.forRootAsync({
+      imports: [PrismaModule],
+      inject: [PrismaService],
+      useFactory: async (prisma: PrismaService) => prisma.config.findMany(),
+      accessor: { accessor: AccessorType.SYSTEM },
+      refreshIntervalMs: 60_000 // background reload; omit to disable
+    })
+  ]
+})
+export class AppModule {}
+```
+
+The factory may return a flat `IConfigItem[]`, an object
+`{ rows, accessor?, options? }`, or an already-built `Configuard`.
+
+## Consume
+
+### `ConfiguardService` (recommended — always current)
+
+Reads through the service, so values stay fresh across a reload:
+
+```ts
+import { Injectable } from '@nestjs/common';
+import { ConfiguardService } from 'nestjs-configuard';
+
+@Injectable()
+export class PortService {
+  constructor(private readonly cfg: ConfiguardService) {}
+
+  get port(): number {
+    return this.cfg.get<number>('device.port', 8080)!;
+  }
+
+  // Re-run the factory after an admin saves new values:
+  async refresh() {
+    await this.cfg.reload();
+  }
+}
+```
+
+`ConfiguardService` delegates the full read API — `get`, `has`, `data`,
+`getMeta`, `isEncrypted`, `requiresReboot`, `accessor`, `appLevel`, `isLocked`,
+`instance` — plus `reload()`.
+
+:::caution[`reload()` only refetches under `forRootAsync`]
+It re-runs the registration factory, so it fetches fresh values only when the
+factory hits a DB. Under `forRoot` (static `rows`) it rebuilds from the same
+in-memory list — effectively a no-op.
+:::
+
+### Raw instance — `@InjectConfiguard()`
+
+For advanced use where you want the boot instance directly (no live reload):
+
+```ts
+import { Injectable } from '@nestjs/common';
+import { Configuard, InjectConfiguard } from 'nestjs-configuard';
+
+@Injectable()
+export class Service {
+  constructor(@InjectConfiguard() private readonly cfg: Configuard) {}
+}
+```
+
+## TTL auto-refresh
+
+When `refreshIntervalMs > 0`, the service starts an `unref`'d timer on
+application bootstrap that reloads config every interval (the DB-config
+"~60s cache"), and clears it on module destroy. Set `refreshEnabled: false` to
+keep it off (break-glass) without removing the interval config.
+
+The full API — every service method, the static `parseFlat` / `serializeFlat`
+admin-UI helpers, and exported types — is documented in the
+[package README](https://github.com/onury/nestjs-configuard#readme).
