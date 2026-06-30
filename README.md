@@ -10,10 +10,12 @@
   <a href="https://gist.github.com/onury/d3f3d765d7db2e8b2d050d14315f2ac7"><img src="https://img.shields.io/badge/ESM-F7DF1E?style=flat" alt="ESM" /></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TS-3260C7?style=flat" alt="TS" /></a>
   <a href="https://github.com/onury/configuard/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/configuard.svg?style=flat&color=blue" alt="license" /></a>
-  <a href="https://onury.io/configuard"><img src="https://img.shields.io/badge/docs-read-c27cf4?style=flat" alt="documentation" /></a>
+  <a href="https://onury.io/configuard"><img src="https://img.shields.io/badge/docs-onury.io-c27cf4?style=flat" alt="documentation" /></a>
 </p>
 
 > This module is **ESM** 🔆. Please [**read this**](https://gist.github.com/onury/d3f3d765d7db2e8b2d050d14315f2ac7).
+
+📖 &nbsp;**Full documentation & guides:** &nbsp;**[onury.io/configuard](https://onury.io/configuard)**
 
 Builds a **nested, typed** configuration object from a **flat list** of
 configuration items (typically rows from a `config` database table) — with
